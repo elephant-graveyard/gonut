@@ -1,0 +1,28 @@
+---
+language: go
+go:
+- 1.11.x
+- 1.12.x
+
+install:
+- curl -sL https://raw.githubusercontent.com/homeport/pina-golada/master/scripts/download-latest.sh | bash -s v1.2.2
+- curl -sL https://goo.gl/g1CpPX | bash -s v1.0.6 # Golang dev tools including pre-compiled Ginkgo and other useful tools
+
+script:
+- GO111MODULE=on go mod download
+- GO111MODULE=on go mod verify
+- make test build
+
+before_deploy:
+- make build
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: cAHdlHLBM4NvzRd7feWEF1ec1d1N8HpjaUc6iqGgb2uTHiwA9esP7IecosW7nLn8Y478qASPsns9pVnCnM8DvkBaaHDElhLMbO2NFTm0Mh6gGcvNpTfQcG6mVBEKawktJMMQpNVjY87UW67m/0+McRNCKk2o8nN+U8p/pHXDay80CXZj84SE8PPVST+ikiGtsxji+t11dfNJ2WS80uGGf7er3NYhojhlWgNuc+b32d/Om7synVqd2M7+oITXWkU/VRUEjT4v7uQTMhKyh5igA3TNu8nrUaJCOd44ZqXBclM25HuapPsmmCRlCs53Gfm3Bd18SHV2QHSRONUnK9hxKk5syafYK+nMghHRcjPK04AEI8KChzjXhph4oqyNOtITTBipptl0HkDLhOLP9O6TQYXjJIySbn4al6SZos++r5jyS2b4U4nqtUswAbm4SkEMp+iIpvW5BF3NIpgiVbyUqCMEjAoeMshocscmEJpcEPzkmKpdr2PlY9j+TCeh3B2tWPCl7lMwexfTqZFSN10/KdxCEHGV48PsoDgjS/Fb3RWdnMhfeD4x5RD2WR0Xo1vsE51Wl7+jSJ4mL4TspNlcGhwN4rRoB0GtsqMCPem9CKFnab+yZNjrTLNWWO1iBNNofdSBFfxZjY6hSZys1So8Y0SjT6fEQpLjNroUhoYj/Tw=
+  file_glob: true
+  file: binaries/*
+  on:
+    condition: $TRAVIS_GO_VERSION =~ ^1\.11
+    tags: true
