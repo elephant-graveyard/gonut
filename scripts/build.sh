@@ -65,11 +65,6 @@ linux amd64
 windows amd64
 EOL
 
-if hash upx >/dev/null 2>&1; then
-  echo -e '\n\033[1mCompressing compiled binaries:\033[0m'
-  upx -9 binaries/*
-fi
-
 if hash file >/dev/null 2>&1; then
   echo -e '\n\033[1mFile details of compiled binaries:\033[0m'
   file binaries/*
