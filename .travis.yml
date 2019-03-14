@@ -5,8 +5,6 @@ go:
 - 1.12.x
 
 install:
-- sudo apt-get update
-- sudo apt-get install -y upx-ucl
 - curl -sL https://raw.githubusercontent.com/homeport/pina-golada/master/scripts/download-latest.sh | bash -s v1.2.3
 - curl -sL https://goo.gl/g1CpPX | bash -s v1.0.6 # Golang dev tools including pre-compiled Ginkgo and other useful tools
 
