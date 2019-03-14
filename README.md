@@ -6,7 +6,15 @@
 [![GoDoc](https://godoc.org/github.com/homeport/gonut?status.svg)](https://godoc.org/github.com/homeport/gonut)
 [![Release](https://img.shields.io/github/release/homeport/gonut.svg)](https://github.com/homeport/gonut/releases/latest)
 
-chocolate-covered cake with vanilla pudding and sour cherries
+## Introducing gonut
+
+`gonut` is a portable tool to help you verify whether you can push a sample app to a Cloud Foundry. It will push an app to Cloud Foundry and delete it afterwards. The apps are embedded into the `gonut` binary, so you just have to install `gonut` and you are set.
+
+It is written in Golang and uses [`pina-golada`](https://github.com/homeport/pina-golada) to include arbitrary sample app data in the final binary.
+
+![gonut example](assets/images/gonut-example.gif?raw=true "Example of gonut pushing a sample app to Pivotal Cloud Foundry")
+
+_This project is work in progress._
 
 ## Contributing
 
@@ -49,4 +57,18 @@ docker run \
   --volume $GOPATH/src/github.com/homeport/gonut:/go/src/github.com/homeport/gonut \
   --workdir /go/src/github.com/homeport/gonut \
   golang:1.11 /bin/bash
+```
+
+### Git pre-commit hooks
+
+Add a pre-commit hook using this command in the repository directory:
+
+```sh
+cat <<EOS | cat > .git/hooks/pre-commit && chmod a+rx .git/hooks/pre-commit
+#!/usr/bin/env bash
+
+set -euo pipefail
+make test
+
+EOS
 ```
