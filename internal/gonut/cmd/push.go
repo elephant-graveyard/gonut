@@ -40,7 +40,7 @@ type sampleApp struct {
 }
 
 var sampleApps = []sampleApp{
-	sampleApp{
+	{
 		caption:       "Golang",
 		command:       "golang",
 		aliases:       []string{"go"},
@@ -48,7 +48,7 @@ var sampleApps = []sampleApp{
 		assetFunc:     assets.Provider.GoSampleApp,
 	},
 
-	sampleApp{
+	{
 		caption:       "Python",
 		command:       "python",
 		aliases:       []string{},
@@ -56,7 +56,7 @@ var sampleApps = []sampleApp{
 		assetFunc:     assets.Provider.PythonSampleApp,
 	},
 
-	sampleApp{
+	{
 		caption:       "PHP",
 		command:       "php",
 		aliases:       []string{},
@@ -64,7 +64,7 @@ var sampleApps = []sampleApp{
 		assetFunc:     assets.Provider.PHPSampleApp,
 	},
 
-	sampleApp{
+	{
 		caption:       "Staticfile",
 		command:       "staticfile",
 		aliases:       []string{"static"},
@@ -85,12 +85,28 @@ func init() {
 
 	for _, sampleApp := range sampleApps {
 		pushCmd.AddCommand(&cobra.Command{
-			Use:   sampleApp.command,
-			Short: fmt.Sprintf("Push a %s sample app to Cloud Foundry", sampleApp.caption),
-			Long:  fmt.Sprintf(`Push a %s sample app to Cloud Foundry. The application will be deleted after it was pushed successfully.`, sampleApp.caption),
-			RunE:  genericCommandFunc,
+			Use:     sampleApp.command,
+			Aliases: sampleApp.aliases,
+			Short:   fmt.Sprintf("Push a %s sample app to Cloud Foundry", sampleApp.caption),
+			Long:    fmt.Sprintf(`Push a %s sample app to Cloud Foundry. The application will be deleted after it was pushed successfully.`, sampleApp.caption),
+			RunE:    genericCommandFunc,
 		})
 	}
+
+	pushCmd.AddCommand(&cobra.Command{
+		Use:   "all",
+		Short: "Pushes all available sample apps to Cloud Foundry",
+		Long:  `Pushes all available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			for _, sampleApp := range sampleApps {
+				if err := runSampleAppPush(sampleApp); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	})
 }
 
 func lookUpSampleAppByName(name string) *sampleApp {
@@ -109,12 +125,16 @@ func genericCommandFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to detect which sample app is to be tested")
 	}
 
-	appName := text.RandomStringWithPrefix(sampleApp.appNamePrefix, 32)
+	return runSampleAppPush(*sampleApp)
+}
 
-	directory, err := sampleApp.assetFunc()
+func runSampleAppPush(app sampleApp) error {
+	appName := text.RandomStringWithPrefix(app.appNamePrefix, 32)
+
+	directory, err := app.assetFunc()
 	if err != nil {
 		return err
 	}
 
-	return cf.PushApp(sampleApp.caption, appName, directory)
+	return cf.PushApp(app.caption, appName, directory)
 }
