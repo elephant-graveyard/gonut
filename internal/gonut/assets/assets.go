@@ -31,7 +31,15 @@ var Provider ProviderInterface
 // @pgl(package=assets&injector=Provider)
 type ProviderInterface interface {
 
-	// GoSampleApp returns the directory containing the go sample app
+	// GoSampleApp returns the directory containing the Golang sample app
 	// @pgl(asset=/assets/sample-apps/golang/&compressor=tar)
 	GoSampleApp() (directory files.Directory, e error)
+
+	// PythonSampleApp returns the directory containing the Python sample app
+	// @pgl(asset=/assets/sample-apps/python/&compressor=tar)
+	PythonSampleApp() (directory files.Directory, e error)
+
+	// PHPSampleApp returns the directory containing the PHP sample app
+	// @pgl(asset=/assets/sample-apps/php/&compressor=tar)
+	PHPSampleApp() (directory files.Directory, e error)
 }

@@ -1,0 +1,5 @@
+---
+applications:
+- name: php-sample-app
+  memory: 128MB
+  disk_quota: 256MB

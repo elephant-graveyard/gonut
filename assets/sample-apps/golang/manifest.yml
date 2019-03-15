@@ -1,4 +1,7 @@
 ---
 applications:
-- env:
+- name: golang-sample-app
+  memory: 128MB
+  disk_quota: 128MB
+  env:
     GOPACKAGENAME: go-online
