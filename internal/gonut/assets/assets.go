@@ -42,4 +42,8 @@ type ProviderInterface interface {
 	// PHPSampleApp returns the directory containing the PHP sample app
 	// @pgl(asset=/assets/sample-apps/php/&compressor=tar)
 	PHPSampleApp() (directory files.Directory, e error)
+
+	// StaticfileSampleApp returns the directory containing the Staticfile sample app
+	// @pgl(asset=/assets/sample-apps/staticfile/&compressor=tar)
+	StaticfileSampleApp() (directory files.Directory, e error)
 }

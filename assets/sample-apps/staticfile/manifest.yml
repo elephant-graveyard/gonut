@@ -1,0 +1,5 @@
+---
+applications:
+- name: staticfile-sample-app
+  memory: 64MB
+  disk_quota: 64MB
