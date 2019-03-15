@@ -63,6 +63,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: "gonut-php-app-",
 		assetFunc:     assets.Provider.PHPSampleApp,
 	},
+
+	sampleApp{
+		caption:       "Staticfile",
+		command:       "staticfile",
+		aliases:       []string{"static"},
+		appNamePrefix: "gonut-staticfile-app-",
+		assetFunc:     assets.Provider.StaticfileSampleApp,
+	},
 }
 
 // pushCmd represents the push command
