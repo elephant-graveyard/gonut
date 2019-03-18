@@ -42,9 +42,6 @@ go mod verify
 echo -e '\n\033[1mCompiling assets:\033[0m'
 pina-golada generate
 
-# TODO Fix issue in pina-golada where duplicate imports are generated
-gofmt -s -w ./internal/gonut/assets/*.go
-
 # GOOS options: darwin dragonfly freebsd linux nacl netbsd openbsd plan9 solaris windows
 # GOARCH options: 386 amd64 amd64p32 arm arm64 ppc64 ppc64le mips mipsle mips64 mips64le s390x
 #
