@@ -25,9 +25,6 @@ set -euo pipefail
 echo -e '\n\033[1mCompiling assets:\033[0m'
 pina-golada generate
 
-# TODO Fix issue in pina-golada where duplicate imports are generated
-gofmt -s -w ./internal/gonut/assets/*.go
-
 GO111MODULE=on ginkgo -r \
   --randomizeAllSpecs \
   --randomizeSuites \
