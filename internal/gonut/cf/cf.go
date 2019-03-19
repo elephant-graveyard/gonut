@@ -33,6 +33,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/homeport/gonut/internal/gonut/nok"
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/homeport/gonvenience/pkg/v1/wait"
 	"github.com/homeport/pina-golada/pkg/files"
@@ -42,14 +43,14 @@ import (
 // PushApp performs a Cloud Foundry CLI based push operation
 func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) (*PushReport, error) {
 	if !isLoggedIn() {
-		return nil, Errorf(
+		return nil, nok.Errorf(
 			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
 			"session is not logged into a Cloud Foundry environment",
 		)
 	}
 
 	if !isTargetOrgAndSpaceSet() {
-		return nil, Errorf(
+		return nil, nok.Errorf(
 			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
 			"no target is set",
 		)
@@ -86,7 +87,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		}()
 
 		if err := files.WriteToDisk(directory, path, true); err != nil {
-			return Errorf(
+			return nok.Errorf(
 				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
 				fmt.Sprintf("An error occurred while trying to write the sample app files to disk: %v", err),
 			)
@@ -94,7 +95,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 
 		pathToSampleApp := filepath.Join(path, directory.AbsolutePath().String())
 		if err := os.Chdir(pathToSampleApp); err != nil {
-			return Errorf(
+			return nok.Errorf(
 				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
 				fmt.Sprintf("An error occurred while trying to change working directory to %s: %v", pathToSampleApp, err),
 			)
@@ -127,7 +128,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 				)
 			}
 
-			return Errorf(caption, output)
+			return nok.Errorf(caption, output)
 		}
 
 		// Note the timestamp when the push has finished
@@ -147,7 +148,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		// report any issues that might come up during that operation.
 		if cleanupSetting == OnSuccess {
 			if output, err := cf(updates, "delete", appName, "-r", "-f"); err != nil {
-				return Errorf(
+				return nok.Errorf(
 					fmt.Sprintf("failed to delete application %s from Cloud Foundry", appName),
 					output,
 				)
@@ -160,7 +161,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 	return &report, err
 }
 
-//DeleteApps iterates over the apps in the slice and delete them
+// DeleteApps iterates over the apps in the slice and delete them
 func DeleteApps(apps []AppDetails) error {
 	caption := "Cleaning Up"
 	spinner := wait.NewProgressIndicator("*%s*", caption)
@@ -206,16 +207,15 @@ func HasBuildpack(buildpackName string) (bool, error) {
 }
 
 func deleteApp(updates chan string, app AppDetails) error {
-
 	if !isLoggedIn() {
-		return Errorf(
+		return nok.Errorf(
 			fmt.Sprintf("failed to delete application %s", app.Entity.Name),
 			"session is not logged into a Cloud Foundry environment",
 		)
 	}
 
 	if !isTargetOrgAndSpaceSet() {
-		return Errorf(
+		return nok.Errorf(
 			fmt.Sprintf("failed to delete application %s", app.Entity.Name),
 			"no target is set",
 		)
@@ -290,17 +290,17 @@ func getApp(appName string) (*AppDetails, error) {
 	return cfCurlAppByGUID(appGUID)
 }
 
-//GetApps gets all Apps of the targeted org and space
+// GetApps gets all Apps of the targeted org and space
 func GetApps() ([]AppDetails, error) {
 	if !isLoggedIn() {
-		return nil, Errorf(
+		return nil, nok.Errorf(
 			"failed to get applications",
 			"session is not logged into a Cloud Foundry environment",
 		)
 	}
 
 	if !isTargetOrgAndSpaceSet() {
-		return nil, Errorf(
+		return nil, nok.Errorf(
 			"failed to get applications",
 			"no target is set",
 		)
