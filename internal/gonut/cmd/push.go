@@ -71,6 +71,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: "gonut-staticfile-app-",
 		assetFunc:     assets.Provider.StaticfileSampleApp,
 	},
+
+	{
+		caption:       "Swift",
+		command:       "swift",
+		aliases:       []string{},
+		appNamePrefix: "gonut-swift-app-",
+		assetFunc:     assets.Provider.SwiftSampleApp,
+	},
 }
 
 // pushCmd represents the push command

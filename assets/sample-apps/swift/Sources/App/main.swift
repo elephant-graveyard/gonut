@@ -3,12 +3,9 @@ import Foundation
 
 // Disable Buffering to write directly to stdout
 setbuf(stdout, nil)
-// simplest log writer ever
-print("Gentleman start the engine ....")
-print("This is a Swift based app!")
 
 let endpoint = Router()
-let logmessage = "Hello. I'm Johnny 5."
+let logmessage = "Hello, Homeport!"
 endpoint.get("/"){
     request, response, next in
     print(logmessage)

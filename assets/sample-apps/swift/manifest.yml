@@ -1,0 +1,5 @@
+---
+applications:
+- name: swift-sample-app
+  memory: 256MB
+  disk_quota: 512MB
