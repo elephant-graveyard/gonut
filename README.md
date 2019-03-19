@@ -16,6 +16,22 @@ It is written in Golang and uses [`pina-golada`](https://github.com/homeport/pin
 
 _This project is work in progress._
 
+## How do I get started
+
+Installation options are either using Homebrew or a convenience download script.
+
+- On macOS systems, a Homebrew tap is available to install `gonut`:
+
+  ```sh
+  brew install homeport/tap/gonut
+  ```
+
+- Use a convenience script to download the latest release to install it in a suitable location on your local machine:
+
+  ```sh
+  curl -fsL http://ibm.biz/Bd2t2v | bash
+  ```
+
 ## Contributing
 
 We are happy to have other people contributing to the project. If you decide to do that, here's how to:
