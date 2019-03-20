@@ -89,11 +89,6 @@ func PushApp(caption string, appName string, directory files.Directory) error {
 
 		pathToSampleApp := filepath.Join(path, directory.AbsolutePath().String())
 
-		// Mitigate potential issue in pina-golada code where the target files cannot be created due to a missing intermediate directory
-		if err := os.MkdirAll(pathToSampleApp, 0755); err != nil {
-			return errors.Wrapf(err, "unable to create directory %s", pathToSampleApp)
-		}
-
 		if err := files.WriteToDisk(directory, path, true); err != nil {
 			return errors.Wrap(err, "failed to write sample app files to disk")
 		}

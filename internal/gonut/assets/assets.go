@@ -46,4 +46,8 @@ type ProviderInterface interface {
 	// StaticfileSampleApp returns the directory containing the Staticfile sample app
 	// @pgl(asset=/assets/sample-apps/staticfile/&compressor=tar)
 	StaticfileSampleApp() (directory files.Directory, e error)
+
+	// SwiftSampleApp returns the directory containing the Swift sample app
+	// @pgl(asset=/assets/sample-apps/swift/&compressor=tar)
+	SwiftSampleApp() (directory files.Directory, e error)
 }
