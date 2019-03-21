@@ -25,6 +25,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/homeport/gonvenience/pkg/v1/bunt"
 )
 
 var cfgFile string
@@ -32,8 +34,14 @@ var cfgFile string
 // rootCmd represents the base command when called without any sub-commands
 var rootCmd = &cobra.Command{
 	Use:   "gonut",
-	Short: "TBD",
-	Long:  `TBD`,
+	Short: "Portable tool to help you verify whether you can push a sample app to a Cloud Foundry.",
+	Long: bunt.Sprintf(`
+Gonut is a portable tool to help you verify whether you can push a sample app to
+a Cloud Foundry instance. It will push a sample app to Cloud Foundry and delete
+it afterwards. The apps are embedded into the gonut binary.
+
+It is written in Golang and uses CornflowerBlue{~https://github.com/homeport/pina-golada~} to
+include arbitrary sample app data in the application binary.`),
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
