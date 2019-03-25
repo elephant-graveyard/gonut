@@ -39,7 +39,7 @@ import (
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
-func PushApp(caption string, appName string, directory files.Directory) error {
+func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) error {
 	if !isLoggedIn() {
 		return fmt.Errorf("unable to push, session is not logged into a Cloud Foundry environment")
 	}
@@ -97,12 +97,22 @@ func PushApp(caption string, appName string, directory files.Directory) error {
 			return errors.Wrapf(err, "failed to change working directory to %s", pathToSampleApp)
 		}
 
+		// If cleanup setting is set to always, make sure to run the delete app
+		// CF CLI call no matter what happens next.
+		if cleanupSetting == Always {
+			defer cf(updates, "delete", appName, "-r", "-f")
+		}
+
 		if _, err := cf(updates, "push", appName); err != nil {
 			return errors.Wrapf(err, "failed to push application %s to Cloud Foundry", appName)
 		}
 
-		if _, err := cf(updates, "delete", appName, "-r", "-f"); err != nil {
-			return errors.Wrapf(err, "failed to delete application %s from Cloud Foundry", appName)
+		// If cleanup setting is set to OnSuccess, run the app removal and
+		// report any issues that might come up during that operation.
+		if cleanupSetting == OnSuccess {
+			if _, err := cf(updates, "delete", appName, "-r", "-f"); err != nil {
+				return errors.Wrapf(err, "failed to delete application %s from Cloud Foundry", appName)
+			}
 		}
 
 		return nil
