@@ -39,6 +39,8 @@ type sampleApp struct {
 	assetFunc     func() (files.Directory, error)
 }
 
+var deleteSetting string
+
 var sampleApps = []sampleApp{
 	{
 		caption:       "Golang",
@@ -91,6 +93,8 @@ var pushCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(pushCmd)
 
+	pushCmd.PersistentFlags().StringVarP(&deleteSetting, "delete", "d", "always", "Delete application after push: always, never, on-success")
+
 	for _, sampleApp := range sampleApps {
 		pushCmd.AddCommand(&cobra.Command{
 			Use:     sampleApp.command,
@@ -137,6 +141,21 @@ func genericCommandFunc(cmd *cobra.Command, args []string) error {
 }
 
 func runSampleAppPush(app sampleApp) error {
+	var cleanupSetting cf.AppCleanupSetting
+	switch deleteSetting {
+	case "always":
+		cleanupSetting = cf.Always
+
+	case "never":
+		cleanupSetting = cf.Never
+
+	case "on-success":
+		cleanupSetting = cf.OnSuccess
+
+	default:
+		return fmt.Errorf("unsupported delete setting: %s", deleteSetting)
+	}
+
 	appName := text.RandomStringWithPrefix(app.appNamePrefix, 32)
 
 	directory, err := app.assetFunc()
@@ -144,5 +163,5 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	return cf.PushApp(app.caption, appName, directory)
+	return cf.PushApp(app.caption, appName, directory, cleanupSetting)
 }

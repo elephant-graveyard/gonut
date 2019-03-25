@@ -20,6 +20,19 @@
 
 package cf
 
+// AppCleanupSetting specifies supported cleanup options
+type AppCleanupSetting int
+
+// Supported cleanup settings include:
+// - Never, leaves the app no matter if push worked or not
+// - Always, removes the app after a push attempt
+// - OnSuccess, removes the app if the push went through without issues
+const (
+	Never = AppCleanupSetting(iota)
+	Always
+	OnSuccess
+)
+
 // CloudFoundryConfig defines the structure used by the Cloud Foundry CLI configuration JSONs
 type CloudFoundryConfig struct {
 	ConfigVersion         int    `json:"ConfigVersion"`
