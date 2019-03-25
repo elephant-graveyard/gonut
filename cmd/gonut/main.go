@@ -21,9 +21,23 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/homeport/gonut/internal/gonut/cmd"
+	"github.com/homeport/gonvenience/pkg/v1/term"
 )
 
 func main() {
+	signals := make(chan os.Signal)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-signals
+		term.ShowCursor()
+		os.Exit(1)
+	}()
+
 	cmd.Execute()
 }
