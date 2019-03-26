@@ -50,4 +50,8 @@ type ProviderInterface interface {
 	// SwiftSampleApp returns the directory containing the Swift sample app
 	// @pgl(asset=/assets/sample-apps/swift/&compressor=tar)
 	SwiftSampleApp() (directory files.Directory, e error)
+
+	// NodeJSSampleApp returns the directory containing the NodeJS sample app
+	// @pgl(asset=/assets/sample-apps/nodejs/&compressor=tar)
+	NodeJSSampleApp() (directory files.Directory, e error)
 }
