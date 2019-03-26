@@ -1,0 +1,7 @@
+---
+applications:
+- name: ruby-sinatra-sample-app
+  memory: 128MB
+  disk_quota: 128MB
+  buildpacks:
+    - ruby_buildpack
