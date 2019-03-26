@@ -89,6 +89,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: "gonut-nodejs-app-",
 		assetFunc:     assets.Provider.NodeJSSampleApp,
 	},
+
+	{
+		caption:       "Ruby",
+		command:       "ruby",
+		aliases:       []string{},
+		appNamePrefix: "gonut-ruby-app-",
+		assetFunc:     assets.Provider.RubySampleApp,
+	},
 }
 
 // pushCmd represents the push command

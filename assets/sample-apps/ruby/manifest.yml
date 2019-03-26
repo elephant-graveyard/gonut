@@ -1,0 +1,5 @@
+---
+applications:
+- name: ruby-sample-app
+  memory: 64MB
+  disk_quota: 128MB

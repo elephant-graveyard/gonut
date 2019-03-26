@@ -54,4 +54,8 @@ type ProviderInterface interface {
 	// NodeJSSampleApp returns the directory containing the NodeJS sample app
 	// @pgl(asset=/assets/sample-apps/nodejs/&compressor=tar)
 	NodeJSSampleApp() (directory files.Directory, e error)
+
+	// RubySampleApp returns the directory containing the Ruby sample app
+	// @pgl(asset=/assets/sample-apps/ruby/&compressor=tar)
+	RubySampleApp() (directory files.Directory, e error)
 }

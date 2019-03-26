@@ -1,0 +1,33 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    coffee-script (2.4.1)
+      coffee-script-source
+      execjs
+    coffee-script-source (1.12.2)
+    execjs (2.7.0)
+    mustermann (1.0.3)
+    puma (3.12.1)
+    rack (2.0.6)
+    rack-coffee (1.0.3)
+      coffee-script
+      rack
+    rack-protection (2.0.5)
+      rack
+    sinatra (2.0.5)
+      mustermann (~> 1.0)
+      rack (~> 2.0)
+      rack-protection (= 2.0.5)
+      tilt (~> 2.0)
+    tilt (2.0.9)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  puma
+  rack-coffee
+  sinatra
+
+BUNDLED WITH
+   1.16.1

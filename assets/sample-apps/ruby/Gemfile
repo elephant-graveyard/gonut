@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+
+gem 'puma'
+gem 'rack-coffee'
+
+group :web do
+  gem 'sinatra'
+end
