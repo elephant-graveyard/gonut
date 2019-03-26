@@ -5,8 +5,8 @@ go:
 - 1.12.x
 
 install:
-- curl -fsL https://ibm.biz/Bd2645 | bash -s v1.2.6
-- curl -fsL https://goo.gl/g1CpPX | bash -s v1.0.7
+- curl -fsL https://ibm.biz/Bd2645 | bash -s v1.2.6 # pina-golada
+- curl -fsL https://goo.gl/g1CpPX | bash -s v1.0.7 # golang-dev-tools
 
 script:
 - GO111MODULE=on go mod download
