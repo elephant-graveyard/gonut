@@ -81,6 +81,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: "gonut-swift-app-",
 		assetFunc:     assets.Provider.SwiftSampleApp,
 	},
+
+	{
+		caption:       "NodeJS",
+		command:       "nodejs",
+		aliases:       []string{"node"},
+		appNamePrefix: "gonut-nodejs-app-",
+		assetFunc:     assets.Provider.NodeJSSampleApp,
+	},
 }
 
 // pushCmd represents the push command

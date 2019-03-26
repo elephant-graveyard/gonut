@@ -1,0 +1,6 @@
+---
+applications:
+- name: nodejs-sample-app
+  memory: 128MB
+  disk_quota: 128MB
+  command: node app.js
