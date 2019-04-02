@@ -24,7 +24,8 @@ all: test build
 
 clean:
 	@rm -rf binaries
-	@GO111MODULE=on go clean -r -cache
+	@pina-golada cleanup
+	@GO111MODULE=on go clean -i -cache -testcache $(shell go list ./...)
 
 lint:
 	@scripts/go-lint.sh
