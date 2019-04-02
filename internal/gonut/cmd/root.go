@@ -29,8 +29,6 @@ import (
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 )
 
-var cfgFile string
-
 // rootCmd represents the base command when called without any sub-commands
 var rootCmd = &cobra.Command{
 	Use:   "gonut",
