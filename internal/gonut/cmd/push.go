@@ -22,11 +22,14 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/homeport/gonut/internal/gonut/assets"
 	"github.com/homeport/gonut/internal/gonut/cf"
+	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/homeport/gonvenience/pkg/v1/text"
 	"github.com/homeport/pina-golada/pkg/files"
 )
@@ -39,7 +42,10 @@ type sampleApp struct {
 	assetFunc     func() (files.Directory, error)
 }
 
-var deleteSetting string
+var (
+	deleteSetting  string
+	summarySetting string
+)
 
 var sampleApps = []sampleApp{
 	{
@@ -109,6 +115,7 @@ func init() {
 	rootCmd.AddCommand(pushCmd)
 
 	pushCmd.PersistentFlags().StringVarP(&deleteSetting, "delete", "d", "always", "Delete application after push: always, never, on-success")
+	pushCmd.PersistentFlags().StringVarP(&summarySetting, "summary", "s", "short", "Push summary detail level: quiet, short, full")
 
 	for _, sampleApp := range sampleApps {
 		pushCmd.AddCommand(&cobra.Command{
@@ -178,5 +185,65 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	return cf.PushApp(app.caption, appName, directory, cleanupSetting)
+	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting)
+	if err != nil {
+		return err
+	}
+
+	switch summarySetting {
+	case "quiet":
+		// Nothing to report
+
+	case "short", "oneline":
+		bunt.Printf("Successfully pushed *%s* sample app in CadetBlue{%s}.\n",
+			app.caption,
+			humanReadableDuration(report.ElapsedTime()),
+		)
+
+	case "full":
+		bunt.Printf("Successfully pushed *%s* sample app in CadetBlue{%s}:\n", app.caption, humanReadableDuration(report.ElapsedTime()))
+		bunt.Printf("  _initialisation_: SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
+		bunt.Printf("        _creating_: SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
+		bunt.Printf("       _uploading_: SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
+		bunt.Printf("         _staging_: SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
+		bunt.Printf("        _starting_: SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
+		bunt.Printf("\n")
+	}
+
+	return nil
+}
+
+func humanReadableDuration(duration time.Duration) string {
+	if duration < time.Second {
+		return "less than a second"
+	}
+
+	seconds := int(duration.Seconds())
+	minutes := 0
+	hours := 0
+
+	if seconds >= 60 {
+		minutes = seconds / 60
+		seconds = seconds % 60
+
+		if minutes >= 60 {
+			hours = minutes / 60
+			minutes = minutes % 60
+		}
+	}
+
+	parts := []string{}
+	if hours > 0 {
+		parts = append(parts, fmt.Sprintf("%d h", hours))
+	}
+
+	if minutes > 0 {
+		parts = append(parts, fmt.Sprintf("%d min", minutes))
+	}
+
+	if seconds > 0 {
+		parts = append(parts, fmt.Sprintf("%d sec", seconds))
+	}
+
+	return strings.Join(parts, " ")
 }

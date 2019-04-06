@@ -31,6 +31,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/homeport/gonvenience/pkg/v1/wait"
 	"github.com/homeport/pina-golada/pkg/files"
@@ -39,16 +40,20 @@ import (
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
-func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) error {
+func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) (*PushReport, error) {
 	if !isLoggedIn() {
-		return fmt.Errorf("unable to push, session is not logged into a Cloud Foundry environment")
+		return nil, fmt.Errorf("unable to push, session is not logged into a Cloud Foundry environment")
 	}
 
 	if !isTargetOrgAndSpaceSet() {
-		return fmt.Errorf("unable to push, no target is set")
+		return nil, fmt.Errorf("unable to push, no target is set")
 	}
 
-	return runWithTempDir(func(path string) error {
+	report := PushReport{}
+
+	err := runWithTempDir(func(path string) error {
+		report.InitStart = time.Now()
+
 		// Changed during each step of the verification process
 		step := "Initialisation"
 
@@ -63,15 +68,19 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 				if text := strings.Trim(update, " "); len(text) > 0 {
 					switch {
 					case strings.HasPrefix(text, "Creating app"):
+						report.CreatingStart = time.Now()
 						step = "Creating"
 
 					case strings.HasPrefix(text, "Uploading files"):
+						report.UploadingStart = time.Now()
 						step = "Uploading"
 
 					case strings.HasPrefix(text, "Staging app"):
+						report.StagingStart = time.Now()
 						step = "Staging"
 
 					case strings.HasPrefix(text, "Waiting for app to start..."):
+						report.StartingStart = time.Now()
 						step = "Starting"
 
 					case strings.HasPrefix(text, "Deleting app"):
@@ -107,6 +116,9 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 			return errors.Wrapf(err, "failed to push application %s to Cloud Foundry", appName)
 		}
 
+		// Note the timestamp when the push has finished
+		report.PushEnd = time.Now()
+
 		// If cleanup setting is set to OnSuccess, run the app removal and
 		// report any issues that might come up during that operation.
 		if cleanupSetting == OnSuccess {
@@ -117,6 +129,8 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 
 		return nil
 	})
+
+	return &report, err
 }
 
 func runWithTempDir(f func(path string) error) error {
