@@ -26,6 +26,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/homeport/gonut/internal/gonut/cf"
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 )
 
@@ -49,4 +50,18 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+// ExitGonut leaves gonut in case of an unresolvable error situation
+func ExitGonut(reason interface{}) {
+	switch typed := reason.(type) {
+	case *cf.ErrorWithDetails:
+		bunt.Printf("*Error:* _%s_\n", typed.Caption)
+		bunt.Printf("%s\n\n", typed.Details)
+
+	default:
+		fmt.Println(reason)
+	}
+
+	os.Exit(1)
 }
