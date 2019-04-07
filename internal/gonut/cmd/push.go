@@ -123,7 +123,7 @@ func init() {
 			Aliases: sampleApp.aliases,
 			Short:   fmt.Sprintf("Push a %s sample app to Cloud Foundry", sampleApp.caption),
 			Long:    fmt.Sprintf(`Push a %s sample app to Cloud Foundry. The application will be deleted after it was pushed successfully.`, sampleApp.caption),
-			RunE:    genericCommandFunc,
+			Run:     genericCommandFunc,
 		})
 	}
 
@@ -131,14 +131,12 @@ func init() {
 		Use:   "all",
 		Short: "Pushes all available sample apps to Cloud Foundry",
 		Long:  `Pushes all available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			for _, sampleApp := range sampleApps {
 				if err := runSampleAppPush(sampleApp); err != nil {
-					return err
+					ExitGonut(err)
 				}
 			}
-
-			return nil
 		},
 	})
 }
@@ -153,13 +151,15 @@ func lookUpSampleAppByName(name string) *sampleApp {
 	return nil
 }
 
-func genericCommandFunc(cmd *cobra.Command, args []string) error {
+func genericCommandFunc(cmd *cobra.Command, args []string) {
 	sampleApp := lookUpSampleAppByName(cmd.Use)
 	if sampleApp == nil {
-		return fmt.Errorf("failed to detect which sample app is to be tested")
+		ExitGonut("failed to detect which sample app is to be tested")
 	}
 
-	return runSampleAppPush(*sampleApp)
+	if err := runSampleAppPush(*sampleApp); err != nil {
+		ExitGonut(err)
+	}
 }
 
 func runSampleAppPush(app sampleApp) error {

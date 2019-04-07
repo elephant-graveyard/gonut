@@ -37,17 +37,22 @@ import (
 	"github.com/homeport/gonvenience/pkg/v1/wait"
 	"github.com/homeport/pina-golada/pkg/files"
 	"github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
 func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) (*PushReport, error) {
 	if !isLoggedIn() {
-		return nil, fmt.Errorf("unable to push, session is not logged into a Cloud Foundry environment")
+		return nil, Errorf(
+			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+			"session is not logged into a Cloud Foundry environment",
+		)
 	}
 
 	if !isTargetOrgAndSpaceSet() {
-		return nil, fmt.Errorf("unable to push, no target is set")
+		return nil, Errorf(
+			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+			"no target is set",
+		)
 	}
 
 	report := PushReport{}
@@ -100,11 +105,17 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		pathToSampleApp := filepath.Join(path, directory.AbsolutePath().String())
 
 		if err := files.WriteToDisk(directory, path, true); err != nil {
-			return errors.Wrap(err, "failed to write sample app files to disk")
+			return Errorf(
+				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+				fmt.Sprintf("An error occurred while trying to write the sample app files to disk: %v", err),
+			)
 		}
 
 		if err := os.Chdir(pathToSampleApp); err != nil {
-			return errors.Wrapf(err, "failed to change working directory to %s", pathToSampleApp)
+			return Errorf(
+				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+				fmt.Sprintf("An error occurred while trying to change working directory to %s: %v", pathToSampleApp, err),
+			)
 		}
 
 		// If cleanup setting is set to always, make sure to run the delete app
@@ -113,8 +124,18 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 			defer cf(updates, "delete", appName, "-r", "-f")
 		}
 
-		if _, err := cf(updates, "push", appName); err != nil {
-			return errors.Wrapf(err, "failed to push application %s to Cloud Foundry", appName)
+		if output, err := cf(updates, "push", appName); err != nil {
+			if app, appDetailsError := getApp(appName); appDetailsError == nil {
+				return Errorf(
+					fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+					fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason),
+				)
+			}
+
+			return Errorf(
+				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+				output,
+			)
 		}
 
 		// Note the timestamp when the push has finished
@@ -128,8 +149,11 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		// If cleanup setting is set to OnSuccess, run the app removal and
 		// report any issues that might come up during that operation.
 		if cleanupSetting == OnSuccess {
-			if _, err := cf(updates, "delete", appName, "-r", "-f"); err != nil {
-				return errors.Wrapf(err, "failed to delete application %s from Cloud Foundry", appName)
+			if output, err := cf(updates, "delete", appName, "-r", "-f"); err != nil {
+				return Errorf(
+					fmt.Sprintf("failed to delete application %s from Cloud Foundry", appName),
+					output,
+				)
 			}
 		}
 
@@ -192,13 +216,17 @@ func getCloudFoundryConfig() (*CloudFoundryConfig, error) {
 	return &config, nil
 }
 
-func getBuildpack(appName string) (*BuildpackDetails, error) {
+func getApp(appName string) (*AppDetails, error) {
 	appGUID, err := cfAppGUID(appName)
 	if err != nil {
 		return nil, err
 	}
 
-	app, err := cfCurlAppByGUID(appGUID)
+	return cfCurlAppByGUID(appGUID)
+}
+
+func getBuildpack(appName string) (*BuildpackDetails, error) {
+	app, err := getApp(appName)
 	if err != nil {
 		return nil, err
 	}
