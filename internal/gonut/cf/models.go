@@ -43,6 +43,8 @@ type PushReport struct {
 	StagingStart   time.Time
 	StartingStart  time.Time
 	PushEnd        time.Time
+
+	Buildpack *BuildpackDetails
 }
 
 // InitTime is the time it takes to initialise the Cloud Foundry app push setup
@@ -120,4 +122,75 @@ type CloudFoundryConfig struct {
 	} `json:"PluginRepos"`
 	MinCLIVersion            string `json:"MinCLIVersion"`
 	MinRecommendedCLIVersion string `json:"MinRecommendedCLIVersion"`
+}
+
+// AppDetails is the Go struct for the /v2/apps/<guid> result JSON
+type AppDetails struct {
+	Metadata struct {
+		GUID      string    `json:"guid"`
+		URL       string    `json:"url"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	} `json:"metadata"`
+	Entity struct {
+		Name                  string      `json:"name"`
+		Production            bool        `json:"production"`
+		SpaceGUID             string      `json:"space_guid"`
+		StackGUID             string      `json:"stack_guid"`
+		Buildpack             interface{} `json:"buildpack"`
+		DetectedBuildpack     string      `json:"detected_buildpack"`
+		DetectedBuildpackGUID string      `json:"detected_buildpack_guid"`
+		EnvironmentJSON       struct {
+			GOPACKAGENAME string `json:"GOPACKAGENAME"`
+		} `json:"environment_json"`
+		Memory                   int         `json:"memory"`
+		Instances                int         `json:"instances"`
+		DiskQuota                int         `json:"disk_quota"`
+		State                    string      `json:"state"`
+		Version                  string      `json:"version"`
+		Command                  interface{} `json:"command"`
+		Console                  bool        `json:"console"`
+		Debug                    interface{} `json:"debug"`
+		StagingTaskID            string      `json:"staging_task_id"`
+		PackageState             string      `json:"package_state"`
+		HealthCheckType          string      `json:"health_check_type"`
+		HealthCheckTimeout       interface{} `json:"health_check_timeout"`
+		HealthCheckHTTPEndpoint  interface{} `json:"health_check_http_endpoint"`
+		StagingFailedReason      interface{} `json:"staging_failed_reason"`
+		StagingFailedDescription interface{} `json:"staging_failed_description"`
+		Diego                    bool        `json:"diego"`
+		DockerImage              interface{} `json:"docker_image"`
+		DockerCredentials        struct {
+			Username interface{} `json:"username"`
+			Password interface{} `json:"password"`
+		} `json:"docker_credentials"`
+		PackageUpdatedAt     time.Time `json:"package_updated_at"`
+		DetectedStartCommand string    `json:"detected_start_command"`
+		EnableSSH            bool      `json:"enable_ssh"`
+		Ports                []int     `json:"ports"`
+		SpaceURL             string    `json:"space_url"`
+		StackURL             string    `json:"stack_url"`
+		RoutesURL            string    `json:"routes_url"`
+		EventsURL            string    `json:"events_url"`
+		ServiceBindingsURL   string    `json:"service_bindings_url"`
+		RouteMappingsURL     string    `json:"route_mappings_url"`
+	} `json:"entity"`
+}
+
+// BuildpackDetails is the Go struct for the /v2/buildpacks/<guid> result JSON
+type BuildpackDetails struct {
+	Metadata struct {
+		GUID      string    `json:"guid"`
+		URL       string    `json:"url"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	} `json:"metadata"`
+	Entity struct {
+		Name     string `json:"name"`
+		Stack    string `json:"stack"`
+		Position int    `json:"position"`
+		Enabled  bool   `json:"enabled"`
+		Locked   bool   `json:"locked"`
+		Filename string `json:"filename"`
+	} `json:"entity"`
 }

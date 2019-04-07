@@ -33,6 +33,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	"github.com/homeport/gonvenience/pkg/v1/wait"
 	"github.com/homeport/pina-golada/pkg/files"
 	"github.com/mitchellh/go-homedir"
@@ -119,6 +120,11 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		// Note the timestamp when the push has finished
 		report.PushEnd = time.Now()
 
+		// Gather details about the buildpack used for the app
+		if buildpack, err := getBuildpack(appName); err == nil {
+			report.Buildpack = buildpack
+		}
+
 		// If cleanup setting is set to OnSuccess, run the app removal and
 		// report any issues that might come up during that operation.
 		if cleanupSetting == OnSuccess {
@@ -186,8 +192,25 @@ func getCloudFoundryConfig() (*CloudFoundryConfig, error) {
 	return &config, nil
 }
 
-func cf(updates chan string, args ...string) (output string, err error) {
-	var buf bytes.Buffer
+func getBuildpack(appName string) (*BuildpackDetails, error) {
+	appGUID, err := cfAppGUID(appName)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := cfCurlAppByGUID(appGUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfCurlBuildpackByGUID(app.Entity.DetectedBuildpackGUID)
+}
+
+func cf(updates chan string, args ...string) (string, error) {
+	var (
+		buf bytes.Buffer
+		err error
+	)
 
 	read, write := io.Pipe()
 	go func() {
@@ -204,10 +227,47 @@ func cf(updates chan string, args ...string) (output string, err error) {
 	scanner := bufio.NewScanner(read)
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		// TODO As long as the bunt package cannot handle arbitrary long strings
+		// with color markers, remove the color to avoid panics during runtime.
+		line := bunt.RemoveAllEscapeSequences(scanner.Text())
 		buf.WriteString(line)
-		updates <- line
+
+		if updates != nil {
+			updates <- line
+		}
 	}
 
-	return output, err
+	return buf.String(), err
+}
+
+func cfAppGUID(appName string) (string, error) {
+	return cf(nil, "app", appName, "--guid")
+}
+
+func cfCurlAppByGUID(appGUID string) (*AppDetails, error) {
+	result, err := cf(nil, "curl", fmt.Sprintf("/v2/apps/%s", appGUID))
+	if err != nil {
+		return nil, err
+	}
+
+	var app AppDetails
+	if err := json.Unmarshal([]byte(result), &app); err != nil {
+		return nil, err
+	}
+
+	return &app, nil
+}
+
+func cfCurlBuildpackByGUID(buildpackGUID string) (*BuildpackDetails, error) {
+	result, err := cf(nil, "curl", fmt.Sprintf("/v2/buildpacks/%s", buildpackGUID))
+	if err != nil {
+		return nil, err
+	}
+
+	var buildpack BuildpackDetails
+	if err := json.Unmarshal([]byte(result), &buildpack); err != nil {
+		return nil, err
+	}
+
+	return &buildpack, nil
 }
