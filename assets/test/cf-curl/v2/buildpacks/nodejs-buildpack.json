@@ -1,0 +1,16 @@
+{
+    "metadata": {
+        "guid": "6b70e2d7-1c63-4af9-b06d-37ae841ca8ae",
+        "url": "/v2/buildpacks/6b70e2d7-1c63-4af9-b06d-37ae841ca8ae",
+        "created_at": "2018-09-05T20:26:55Z",
+        "updated_at": "2019-04-03T14:10:46Z"
+    },
+    "entity": {
+        "name": "nodejs_buildpack",
+        "stack": "cflinuxfs3",
+        "position": 5,
+        "enabled": true,
+        "locked": false,
+        "filename": "nodejs_buildpack-cached-cflinuxfs3-v1.6.47.zip"
+    }
+}

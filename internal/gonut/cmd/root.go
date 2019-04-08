@@ -57,7 +57,7 @@ func ExitGonut(reason interface{}) {
 	switch typed := reason.(type) {
 	case *cf.ErrorWithDetails:
 		bunt.Printf("*Error:* _%s_\n", typed.Caption)
-		bunt.Printf("%s\n\n", typed.Details)
+		fmt.Printf("%s\n\n", typed.Details)
 
 	default:
 		fmt.Println(reason)
