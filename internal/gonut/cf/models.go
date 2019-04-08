@@ -20,7 +20,10 @@
 
 package cf
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // AppCleanupSetting specifies supported cleanup options
 type AppCleanupSetting int
@@ -44,7 +47,8 @@ type PushReport struct {
 	StartingStart  time.Time
 	PushEnd        time.Time
 
-	Buildpack *BuildpackDetails
+	buildpack *BuildpackDetails
+	stack     *StackDetails
 }
 
 // InitTime is the time it takes to initialise the Cloud Foundry app push setup
@@ -75,6 +79,27 @@ func (report PushReport) StartingTime() time.Duration {
 // ElapsedTime is the overall elapsed time it takes to push an app in Cloud Foundry
 func (report PushReport) ElapsedTime() time.Duration {
 	return report.PushEnd.Sub(report.InitStart)
+}
+
+// Buildpack provides the name of the buildpack used (if detectable)
+func (report PushReport) Buildpack() string {
+	if report.buildpack != nil {
+		return report.buildpack.Entity.Name
+	}
+
+	return "(unknown)"
+}
+
+// Stack provides the name of the stack used (if detectable)
+func (report PushReport) Stack() string {
+	if report.stack != nil {
+		return fmt.Sprintf("%s (%s)",
+			report.stack.Entity.Description,
+			report.stack.Entity.Name,
+		)
+	}
+
+	return "(unknown)"
 }
 
 // CloudFoundryConfig defines the structure used by the Cloud Foundry CLI configuration JSONs
@@ -133,16 +158,14 @@ type AppDetails struct {
 		UpdatedAt time.Time `json:"updated_at"`
 	} `json:"metadata"`
 	Entity struct {
-		Name                  string      `json:"name"`
-		Production            bool        `json:"production"`
-		SpaceGUID             string      `json:"space_guid"`
-		StackGUID             string      `json:"stack_guid"`
-		Buildpack             interface{} `json:"buildpack"`
-		DetectedBuildpack     string      `json:"detected_buildpack"`
-		DetectedBuildpackGUID string      `json:"detected_buildpack_guid"`
-		EnvironmentJSON       struct {
-			GOPACKAGENAME string `json:"GOPACKAGENAME"`
-		} `json:"environment_json"`
+		Name                     string      `json:"name"`
+		Production               bool        `json:"production"`
+		SpaceGUID                string      `json:"space_guid"`
+		StackGUID                string      `json:"stack_guid"`
+		Buildpack                interface{} `json:"buildpack"`
+		DetectedBuildpack        string      `json:"detected_buildpack"`
+		DetectedBuildpackGUID    string      `json:"detected_buildpack_guid"`
+		EnvironmentJSON          interface{} `json:"environment_json"`
 		Memory                   int         `json:"memory"`
 		Instances                int         `json:"instances"`
 		DiskQuota                int         `json:"disk_quota"`
@@ -186,11 +209,25 @@ type BuildpackDetails struct {
 		UpdatedAt time.Time `json:"updated_at"`
 	} `json:"metadata"`
 	Entity struct {
-		Name     string `json:"name"`
-		Stack    string `json:"stack"`
-		Position int    `json:"position"`
-		Enabled  bool   `json:"enabled"`
-		Locked   bool   `json:"locked"`
-		Filename string `json:"filename"`
+		Name     string      `json:"name"`
+		Stack    interface{} `json:"stack"`
+		Position int         `json:"position"`
+		Enabled  bool        `json:"enabled"`
+		Locked   bool        `json:"locked"`
+		Filename string      `json:"filename"`
+	} `json:"entity"`
+}
+
+// StackDetails is the Go struct for the /v2/stacks/<guid> result JSON
+type StackDetails struct {
+	Metadata struct {
+		GUID      string    `json:"guid"`
+		URL       string    `json:"url"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	} `json:"metadata"`
+	Entity struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
 	} `json:"entity"`
 }

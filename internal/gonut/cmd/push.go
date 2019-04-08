@@ -207,8 +207,8 @@ func runSampleAppPush(app sampleApp) error {
 		bunt.Printf("       _uploading_: SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
 		bunt.Printf("         _staging_: SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
 		bunt.Printf("        _starting_: SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
-		bunt.Printf("       _buildpack_: BurlyWood{%s}\n", report.Buildpack.Entity.Name)
-		bunt.Printf("           _stack_: BurlyWood{%s}\n", report.Buildpack.Entity.Stack)
+		bunt.Printf("       _buildpack_: BurlyWood{%s}\n", report.Buildpack())
+		bunt.Printf("           _stack_: BurlyWood{%s}\n", report.Stack())
 		bunt.Printf("\n")
 	}
 

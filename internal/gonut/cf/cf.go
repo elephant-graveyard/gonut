@@ -126,9 +126,18 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 
 		if output, err := cf(updates, "push", appName); err != nil {
 			if app, appDetailsError := getApp(appName); appDetailsError == nil {
-				return Errorf(
-					fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
-					fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason),
+				if app.Entity.StagingFailedDescription != nil && app.Entity.StagingFailedReason != nil {
+					return Errorf(
+						fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
+						fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason),
+					)
+				}
+			}
+
+			if recentLogs, err := cf(nil, "logs", appName, "--recent"); err == nil {
+				output = fmt.Sprintf("%s\n\nApplication logs:\n%s",
+					output,
+					recentLogs,
 				)
 			}
 
@@ -143,7 +152,12 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 
 		// Gather details about the buildpack used for the app
 		if buildpack, err := getBuildpack(appName); err == nil {
-			report.Buildpack = buildpack
+			report.buildpack = buildpack
+		}
+
+		// Gather details about the stack used for the app
+		if stack, err := getStack(appName); err == nil {
+			report.stack = stack
 		}
 
 		// If cleanup setting is set to OnSuccess, run the app removal and
@@ -234,6 +248,15 @@ func getBuildpack(appName string) (*BuildpackDetails, error) {
 	return cfCurlBuildpackByGUID(app.Entity.DetectedBuildpackGUID)
 }
 
+func getStack(appName string) (*StackDetails, error) {
+	app, err := getApp(appName)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfCurlStackURL(app.Entity.StackURL)
+}
+
 func cf(updates chan string, args ...string) (string, error) {
 	var (
 		buf bytes.Buffer
@@ -259,6 +282,7 @@ func cf(updates chan string, args ...string) (string, error) {
 		// with color markers, remove the color to avoid panics during runtime.
 		line := bunt.RemoveAllEscapeSequences(scanner.Text())
 		buf.WriteString(line)
+		buf.WriteString("\n")
 
 		if updates != nil {
 			updates <- line
@@ -269,7 +293,12 @@ func cf(updates chan string, args ...string) (string, error) {
 }
 
 func cfAppGUID(appName string) (string, error) {
-	return cf(nil, "app", appName, "--guid")
+	result, err := cf(nil, "app", appName, "--guid")
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Trim(result, " \n"), nil
 }
 
 func cfCurlAppByGUID(appGUID string) (*AppDetails, error) {
@@ -298,4 +327,18 @@ func cfCurlBuildpackByGUID(buildpackGUID string) (*BuildpackDetails, error) {
 	}
 
 	return &buildpack, nil
+}
+
+func cfCurlStackURL(stackURL string) (*StackDetails, error) {
+	result, err := cf(nil, "curl", stackURL)
+	if err != nil {
+		return nil, err
+	}
+
+	var stack StackDetails
+	if err := json.Unmarshal([]byte(result), &stack); err != nil {
+		return nil, err
+	}
+
+	return &stack, nil
 }

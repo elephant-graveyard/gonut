@@ -1,0 +1,12 @@
+{
+    "metadata": {
+        "guid": "841d2f2c-c9c7-47f5-9b63-0f1dd1ef280f",
+        "url": "/v2/stacks/841d2f2c-c9c7-47f5-9b63-0f1dd1ef280f",
+        "created_at": "2018-08-29T00:25:31Z",
+        "updated_at": "2018-08-29T00:25:31Z"
+    },
+    "entity": {
+        "name": "cflinuxfs3",
+        "description": "Cloud Foundry Linux-based filesystem (Ubuntu 18.04)"
+    }
+}
