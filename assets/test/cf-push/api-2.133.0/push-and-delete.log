@@ -1,0 +1,99 @@
+Pushing from manifest to org [36;1mtest-org[0m / space [36;1mtest-space[0m as [36;1mfoobar@foobar.com[0m...
+Using manifest file /tmp/manifest.yml
+Getting app info...
+Creating app with these attributes...
+[32m+ name:         the-app-name[0m
+  path:         /tmp
+[32m+ disk quota:   128M[0m
+[32m+ memory:       128M[0m
+  env:
+[32m+   GOPACKAGENAME[0m
+  routes:
+[32m+   the-app-name.foobar.com[0m
+
+Creating app [36;1mthe-app-name[0m...
+Mapping routes...
+Comparing local files to remote cache...
+Packaging files to upload...
+Uploading files...
+
+ 0 B / 394 B [-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------]   0.00%
+ 394 B / 394 B [=====================================================================================================================================================================================================================================================================================================] 100.00%
+ 394 B / 394 B [=====================================================================================================================================================================================================================================================================================================] 100.00%
+ 394 B / 394 B [=====================================================================================================================================================================================================================================================================================================] 100.00%
+ 394 B / 394 B [=====================================================================================================================================================================================================================================================================================================] 100.00%
+ 394 B / 394 B [=====================================================================================================================================================================================================================================================================================================] 100.00%
+ 394 B / 394 B [=====================================================================================================================================================================================================================================================================================================] 100.00%
+ 394 B / 394 B [==================================================================================================================================================================================================================================================================================================] 100.00% 1s
+
+Waiting for API to complete processing files...
+
+Staging app and tracing logs...
+   Downloading dotnet_core_buildpack_beta...
+   Downloading ruby_buildpack...
+   Downloading php_buildpack...
+   Downloading go_buildpack...
+   Downloading python_buildpack...
+   Downloaded dotnet_core_buildpack_beta
+   Downloading dotnet_core_buildpack...
+   Downloaded go_buildpack
+   Downloading nodejs_buildpack...
+   Downloaded php_buildpack
+   Downloaded ruby_buildpack
+   Downloading staticfile_buildpack...
+   Downloaded python_buildpack
+   Downloading binary_buildpack...
+   Downloaded staticfile_buildpack
+   Downloading java_buildpack...
+   Downloaded nodejs_buildpack
+   Downloaded dotnet_core_buildpack
+   Downloaded binary_buildpack
+   Downloaded java_buildpack
+   Cell e6c5e16e-1195-480a-b1ea-1d111965d95b creating container for instance 37679309-f798-4ab8-ac72-803d65ce24bc
+   Cell e6c5e16e-1195-480a-b1ea-1d111965d95b successfully created container for instance 37679309-f798-4ab8-ac72-803d65ce24bc
+   Downloading app package...
+   Downloaded app package (394B)
+   -----> Go Buildpack version 1.8.37
+          [31;1m**WARNING**[0m [DEPRECATION WARNING]:
+          [31;1m**WARNING**[0m Please use AppDynamics extension buildpack for Golang Application instrumentation
+          [31;1m**WARNING**[0m for more details: https://docs.pivotal.io/partners/appdynamics/multibuildpack.html
+   -----> Installing godep 80
+          Copy [/tmp/buildpacks/8d2f095565779cdf9b16a5cb86e14d2c/dependencies/52a892f00e80ca4fdcf27d9828c7aba1/godep-v80-linux-x64-cflinuxfs3-b60ac947.tgz]
+   -----> Installing glide 0.13.2
+          Copy [/tmp/buildpacks/8d2f095565779cdf9b16a5cb86e14d2c/dependencies/fd4e8ddc56ffc364f5d99fa014efa3db/glide-v0.13.2-linux-x64-cflinuxfs3-b50997e2.tgz]
+   -----> Installing dep 0.5.1
+          Copy [/tmp/buildpacks/8d2f095565779cdf9b16a5cb86e14d2c/dependencies/74ea62ec617ddab3cb253665898fe767/dep-v0.5.1-linux-x64-cflinuxfs3-c2056e50.tgz]
+   -----> Installing go 1.10.8
+          Copy [/tmp/buildpacks/8d2f095565779cdf9b16a5cb86e14d2c/dependencies/3ea0b297a9a3419a2e61690b045e13c6/go1.10.8.linux-amd64-cflinuxfs3-c80a4f0d.tar.gz]
+          [31;1m**WARNING**[0m go 1.10.x will no longer be available in new buildpacks released after 2019-02-25.
+          See: https://golang.org/doc/devel/release.html
+          [31;1m**WARNING**[0m Installing package '.' (default)
+   -----> Running: go install -tags cloudfoundry -buildmode pie .
+   Exit status 0
+   Uploading droplet, build artifacts cache...
+   Uploading droplet...
+   Uploading build artifacts cache...
+   Uploaded build artifacts cache (4.7M)
+   Uploaded droplet (2.5M)
+   Uploading complete
+   Cell e6c5e16e-1195-480a-b1ea-1d111965d95b stopping instance 37679309-f798-4ab8-ac72-803d65ce24bc
+   Cell e6c5e16e-1195-480a-b1ea-1d111965d95b destroying container for instance 37679309-f798-4ab8-ac72-803d65ce24bc
+   Cell e6c5e16e-1195-480a-b1ea-1d111965d95b successfully destroyed container for instance 37679309-f798-4ab8-ac72-803d65ce24bc
+
+Waiting for app to start...
+
+name:              the-app-name
+requested state:   started
+instances:         1/1
+usage:             128M x 1 instances
+routes:            the-app-name.cfapps.io
+last uploaded:     Tue 09 Apr 14:23:41 CEST 2019
+stack:             cflinuxfs3
+buildpack:         go
+start command:     ./bin/go-online
+
+     [1mstate[0m     [1msince[0m                  [1mcpu[0m    [1mmemory[0m      [1mdisk[0m        [1mdetails[0m
+#0   running   2019-04-09T12:24:21Z   0.0%   0 of 128M   0 of 128M   
+
+Deleting app the-app-name in org test-org / space test-space as foobar@foobar.com...
+OK

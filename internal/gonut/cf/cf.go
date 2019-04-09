@@ -58,8 +58,6 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 	report := PushReport{}
 
 	err := runWithTempDir(func(path string) error {
-		report.InitStart = time.Now()
-
 		// Changed during each step of the verification process
 		step := "Initialisation"
 
@@ -72,25 +70,8 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		go func() {
 			for update := range updates {
 				if text := strings.Trim(update, " "); len(text) > 0 {
-					switch {
-					case strings.HasPrefix(text, "Creating app"):
-						report.CreatingStart = time.Now()
-						step = "Creating"
-
-					case strings.HasPrefix(text, "Uploading files"):
-						report.UploadingStart = time.Now()
-						step = "Uploading"
-
-					case strings.HasPrefix(text, "Staging app"):
-						report.StagingStart = time.Now()
-						step = "Staging"
-
-					case strings.HasPrefix(text, "Waiting for app to start..."):
-						report.StartingStart = time.Now()
-						step = "Starting"
-
-					case strings.HasPrefix(text, "Deleting app"):
-						step = "Deleting"
+					if result := report.ParseUpdate(text); result != "" {
+						step = result
 					}
 
 					spinner.SetText("*%s*, DimGray{%s} - %s",
@@ -102,8 +83,6 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 			}
 		}()
 
-		pathToSampleApp := filepath.Join(path, directory.AbsolutePath().String())
-
 		if err := files.WriteToDisk(directory, path, true); err != nil {
 			return Errorf(
 				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -111,6 +90,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 			)
 		}
 
+		pathToSampleApp := filepath.Join(path, directory.AbsolutePath().String())
 		if err := os.Chdir(pathToSampleApp); err != nil {
 			return Errorf(
 				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -123,6 +103,9 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		if cleanupSetting == Always {
 			defer cf(updates, "delete", appName, "-r", "-f")
 		}
+
+		// Note the timestamp when the push starts
+		report.InitStart = time.Now()
 
 		if output, err := cf(updates, "push", appName); err != nil {
 			if app, appDetailsError := getApp(appName); appDetailsError == nil {
@@ -281,6 +264,11 @@ func cf(updates chan string, args ...string) (string, error) {
 		// TODO As long as the bunt package cannot handle arbitrary long strings
 		// with color markers, remove the color to avoid panics during runtime.
 		line := bunt.RemoveAllEscapeSequences(scanner.Text())
+
+		// Some cloud controller versions return unwanted control characters
+		// that are better be removed to achieve a clean output
+		line = strings.Replace(line, "\r", "", -1)
+
 		buf.WriteString(line)
 		buf.WriteString("\n")
 
