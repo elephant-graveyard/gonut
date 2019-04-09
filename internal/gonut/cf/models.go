@@ -21,7 +21,6 @@
 package cf
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -37,70 +36,6 @@ const (
 	Always
 	OnSuccess
 )
-
-// PushReport encapsules details of a Cloud Foundry push command
-type PushReport struct {
-	InitStart      time.Time
-	CreatingStart  time.Time
-	UploadingStart time.Time
-	StagingStart   time.Time
-	StartingStart  time.Time
-	PushEnd        time.Time
-
-	buildpack *BuildpackDetails
-	stack     *StackDetails
-}
-
-// InitTime is the time it takes to initialise the Cloud Foundry app push setup
-func (report PushReport) InitTime() time.Duration {
-	return report.CreatingStart.Sub(report.InitStart)
-}
-
-// CreatingTime is the time it takes to create the app in Cloud Foundry
-func (report PushReport) CreatingTime() time.Duration {
-	return report.UploadingStart.Sub(report.CreatingStart)
-}
-
-// UploadingTime is the time it takes to upload the app bits to Cloud Foundry
-func (report PushReport) UploadingTime() time.Duration {
-	return report.StagingStart.Sub(report.UploadingStart)
-}
-
-// StagingTime is the time it takes to stage (compile) the app in Cloud Foundry
-func (report PushReport) StagingTime() time.Duration {
-	return report.StartingStart.Sub(report.StagingStart)
-}
-
-// StartingTime is the time it takes to start the compiled app in Cloud Foundry
-func (report PushReport) StartingTime() time.Duration {
-	return report.PushEnd.Sub(report.StartingStart)
-}
-
-// ElapsedTime is the overall elapsed time it takes to push an app in Cloud Foundry
-func (report PushReport) ElapsedTime() time.Duration {
-	return report.PushEnd.Sub(report.InitStart)
-}
-
-// Buildpack provides the name of the buildpack used (if detectable)
-func (report PushReport) Buildpack() string {
-	if report.buildpack != nil {
-		return report.buildpack.Entity.Name
-	}
-
-	return "(unknown)"
-}
-
-// Stack provides the name of the stack used (if detectable)
-func (report PushReport) Stack() string {
-	if report.stack != nil {
-		return fmt.Sprintf("%s (%s)",
-			report.stack.Entity.Description,
-			report.stack.Entity.Name,
-		)
-	}
-
-	return "(unknown)"
-}
 
 // CloudFoundryConfig defines the structure used by the Cloud Foundry CLI configuration JSONs
 type CloudFoundryConfig struct {
