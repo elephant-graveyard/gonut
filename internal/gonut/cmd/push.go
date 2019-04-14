@@ -34,6 +34,10 @@ import (
 	"github.com/homeport/pina-golada/pkg/files"
 )
 
+//GonutAppPrefix is the prefeix for gonuts applications, it is also used by
+//the cleanup command to decide whether an app is pushed by gonut or not
+var GonutAppPrefix = "gonut"
+
 type sampleApp struct {
 	caption       string
 	command       string
@@ -52,7 +56,7 @@ var sampleApps = []sampleApp{
 		caption:       "Golang",
 		command:       "golang",
 		aliases:       []string{"go"},
-		appNamePrefix: "gonut-golang-app-",
+		appNamePrefix: fmt.Sprintf("%s-golang-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.GoSampleApp,
 	},
 
@@ -60,7 +64,7 @@ var sampleApps = []sampleApp{
 		caption:       "Python",
 		command:       "python",
 		aliases:       []string{},
-		appNamePrefix: "gonut-python-app-",
+		appNamePrefix: fmt.Sprintf("%s-python-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.PythonSampleApp,
 	},
 
@@ -68,7 +72,7 @@ var sampleApps = []sampleApp{
 		caption:       "PHP",
 		command:       "php",
 		aliases:       []string{},
-		appNamePrefix: "gonut-php-app-",
+		appNamePrefix: fmt.Sprintf("%s-php-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.PHPSampleApp,
 	},
 
@@ -76,7 +80,7 @@ var sampleApps = []sampleApp{
 		caption:       "Staticfile",
 		command:       "staticfile",
 		aliases:       []string{"static"},
-		appNamePrefix: "gonut-staticfile-app-",
+		appNamePrefix: fmt.Sprintf("%s-staticfile-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.StaticfileSampleApp,
 	},
 
@@ -84,7 +88,7 @@ var sampleApps = []sampleApp{
 		caption:       "Swift",
 		command:       "swift",
 		aliases:       []string{},
-		appNamePrefix: "gonut-swift-app-",
+		appNamePrefix: fmt.Sprintf("%s-swift-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.SwiftSampleApp,
 	},
 
@@ -92,14 +96,14 @@ var sampleApps = []sampleApp{
 		caption:       "NodeJS",
 		command:       "nodejs",
 		aliases:       []string{"node"},
-		appNamePrefix: "gonut-nodejs-app-",
+		appNamePrefix: fmt.Sprintf("%s-nodejs-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.NodeJSSampleApp,
 	},
 
 	{
 		caption:       "Ruby",
 		command:       "ruby",
-		appNamePrefix: "gonut-ruby-sinatra-app-",
+		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
 }
