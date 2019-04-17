@@ -23,6 +23,7 @@ package cf_test
 import (
 	"encoding/json"
 	"io/ioutil"
+	"reflect"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -39,6 +40,16 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 			var app AppDetails
 			Expect(json.Unmarshal(data, &app)).ToNot(HaveOccurred())
 			Expect(app.Entity.DetectedBuildpackGUID).To(BeEquivalentTo("6b70e2d7-1c63-4af9-b06d-37ae841ca8ae"))
+		})
+
+		It("should parse Cloud Foundry API page of apps details", func() {
+			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/apps/apps-page.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			var appsPage AppsPage
+			var apps []AppDetails
+			Expect(json.Unmarshal(data, &appsPage)).ToNot(HaveOccurred())
+			Expect(reflect.TypeOf(appsPage.Resources)).To(BeEquivalentTo(reflect.TypeOf(apps)))
 		})
 
 		It("should parse Cloud Foundry API buildpacks details", func() {

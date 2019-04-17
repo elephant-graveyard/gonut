@@ -166,3 +166,12 @@ type StackDetails struct {
 		Description string `json:"description"`
 	} `json:"entity"`
 }
+
+// AppsPage represents the result from cf curl /v2/apps page
+type AppsPage struct {
+	// TotalResults string `json:"total_results"`
+	// TotalPages string `json:"total_pages"`
+	// PrevURL     string       `json:"prev_url"`
+	NextURL   string       `json:"next_url"`
+	Resources []AppDetails `json:"resources"`
+}

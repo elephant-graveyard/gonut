@@ -160,6 +160,57 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 	return &report, err
 }
 
+//DeleteApps iterates over the apps in the slice and delete them
+func DeleteApps(apps []AppDetails) error {
+	caption := "Cleaning Up"
+	spinner := wait.NewProgressIndicator("*%s*", caption)
+	spinner.Start()
+	defer spinner.Stop()
+
+	updates := make(chan string)
+	defer close(updates)
+	go func() {
+		for update := range updates {
+			if text := strings.Trim(update, " "); len(text) > 0 {
+				spinner.SetText("*%s*, %s",
+					caption,
+					text,
+				)
+			}
+		}
+	}()
+
+	for _, app := range apps {
+		if err := deleteApp(updates, app); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func deleteApp(updates chan string, app AppDetails) error {
+
+	if !isLoggedIn() {
+		return Errorf(
+			fmt.Sprintf("failed to delete application %s", app.Entity.Name),
+			"session is not logged into a Cloud Foundry environment",
+		)
+	}
+
+	if !isTargetOrgAndSpaceSet() {
+		return Errorf(
+			fmt.Sprintf("failed to delete application %s", app.Entity.Name),
+			"no target is set",
+		)
+	}
+
+	if _, err := cf(updates, "delete", app.Entity.Name, "-r", "-f"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func runWithTempDir(f func(path string) error) error {
 	dir, err := ioutil.TempDir("", "gonut")
 	if err != nil {
@@ -220,6 +271,25 @@ func getApp(appName string) (*AppDetails, error) {
 	}
 
 	return cfCurlAppByGUID(appGUID)
+}
+
+//GetApps gets all Apps of the targeted org and space
+func GetApps() ([]AppDetails, error) {
+	if !isLoggedIn() {
+		return nil, Errorf(
+			"failed to get applications",
+			"session is not logged into a Cloud Foundry environment",
+		)
+	}
+
+	if !isTargetOrgAndSpaceSet() {
+		return nil, Errorf(
+			"failed to get applications",
+			"no target is set",
+		)
+	}
+
+	return cfCurlOrgsSpaceApps()
 }
 
 func getBuildpack(appName string) (*BuildpackDetails, error) {
@@ -287,6 +357,38 @@ func cfAppGUID(appName string) (string, error) {
 	}
 
 	return strings.Trim(result, " \n"), nil
+}
+
+func cfCurlOrgsSpaceApps() ([]AppDetails, error) {
+	var apps []AppDetails
+	var result string
+	var err error
+
+	nextURL := "/v2/apps"
+
+	for {
+		result, err = cf(nil, "curl", nextURL)
+
+		if err != nil {
+			return nil, err
+		}
+
+		var page AppsPage
+
+		if err := json.Unmarshal([]byte(result), &page); err != nil {
+			return nil, err
+		}
+
+		apps = append(apps, page.Resources...)
+
+		if len(page.NextURL) == 0 {
+			break
+		}
+
+		nextURL = page.NextURL
+	}
+
+	return apps, nil
 }
 
 func cfCurlAppByGUID(appGUID string) (*AppDetails, error) {
