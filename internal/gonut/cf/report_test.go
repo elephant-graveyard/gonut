@@ -44,23 +44,29 @@ func linefeeder(path string, fn func(text string)) {
 	Expect(scanner.Err()).ToNot(HaveOccurred())
 }
 
+func createMockReport(path string) *PushReport {
+	report := &PushReport{
+		AppName:   "the-app-name",
+		InitStart: time.Now(),
+	}
+
+	linefeeder(path, func(text string) {
+		report.ParseUpdate(text)
+	})
+
+	report.PushEnd = time.Now()
+
+	return report
+}
+
 var _ = Describe("Cloud Foundry push report", func() {
 	Context("Parse Cloud Foundry push output", func() {
 		var (
-			report *PushReport
-			unset  = time.Time{}
+			unset = time.Time{}
 		)
 
-		BeforeEach(func() {
-			report = &PushReport{
-				InitStart: time.Now(),
-			}
-		})
-
 		It("should parse cloud controller api version 2.92.0 style logs", func() {
-			linefeeder("../../../assets/test/cf-push/api-2.92.0/push-and-delete.log", func(text string) {
-				report.ParseUpdate(text)
-			})
+			report := createMockReport("../../../assets/test/cf-push/api-2.92.0/push-and-delete.log")
 
 			Expect(report.InitStart).ToNot(BeEquivalentTo(unset))
 			Expect(report.CreatingStart).ToNot(BeEquivalentTo(unset))
@@ -70,9 +76,17 @@ var _ = Describe("Cloud Foundry push report", func() {
 		})
 
 		It("should parse cloud controller api version 2.106.0 style logs", func() {
-			linefeeder("../../../assets/test/cf-push/api-2.106.0/push-and-delete.log", func(text string) {
-				report.ParseUpdate(text)
-			})
+			report := createMockReport("../../../assets/test/cf-push/api-2.106.0/push-and-delete.log")
+
+			Expect(report.InitStart).ToNot(BeEquivalentTo(unset))
+			Expect(report.CreatingStart).ToNot(BeEquivalentTo(unset))
+			Expect(report.UploadingStart).ToNot(BeEquivalentTo(unset))
+			Expect(report.StagingStart).ToNot(BeEquivalentTo(unset))
+			Expect(report.StartingStart).ToNot(BeEquivalentTo(unset))
+		})
+
+		It("should parse cloud controller api version 2.128.0 style logs", func() {
+			report := createMockReport("../../../assets/test/cf-push/api-2.128.0/push-and-delete.log")
 
 			Expect(report.InitStart).ToNot(BeEquivalentTo(unset))
 			Expect(report.CreatingStart).ToNot(BeEquivalentTo(unset))
@@ -82,15 +96,20 @@ var _ = Describe("Cloud Foundry push report", func() {
 		})
 
 		It("should parse cloud controller api version 2.133.0 style logs", func() {
-			linefeeder("../../../assets/test/cf-push/api-2.133.0/push-and-delete.log", func(text string) {
-				report.ParseUpdate(text)
-			})
+			report := createMockReport("../../../assets/test/cf-push/api-2.133.0/push-and-delete.log")
 
 			Expect(report.InitStart).ToNot(BeEquivalentTo(unset))
 			Expect(report.CreatingStart).ToNot(BeEquivalentTo(unset))
 			Expect(report.UploadingStart).ToNot(BeEquivalentTo(unset))
 			Expect(report.StagingStart).ToNot(BeEquivalentTo(unset))
 			Expect(report.StartingStart).ToNot(BeEquivalentTo(unset))
+		})
+
+		It("should parse unknown cloud controller api style logs without issues", func() {
+			report := createMockReport("../../../assets/test/cf-push/api-unknown/push-and-delete.log")
+
+			Expect(report.InitStart).ToNot(BeEquivalentTo(unset))
+			Expect(report.PushEnd).ToNot(BeEquivalentTo(unset))
 		})
 	})
 })

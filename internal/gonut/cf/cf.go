@@ -55,11 +55,13 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		)
 	}
 
-	report := PushReport{}
+	report := PushReport{
+		AppName: appName,
+	}
 
 	err := runWithTempDir(func(path string) error {
 		// Changed during each step of the verification process
-		step := "Initialisation"
+		step := "Ramp-up"
 
 		spinner := wait.NewProgressIndicator("*%s*, DimGray{%s}", caption, step)
 		spinner.Start()

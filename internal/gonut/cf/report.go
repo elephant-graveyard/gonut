@@ -28,6 +28,8 @@ import (
 
 // PushReport encapsules details of a Cloud Foundry push command
 type PushReport struct {
+	AppName string
+
 	InitStart      time.Time
 	CreatingStart  time.Time
 	UploadingStart time.Time
@@ -97,15 +99,15 @@ func (report *PushReport) ParseUpdate(text string) string {
 		report.CreatingStart = time.Now()
 		return "Creating"
 
-	case strings.HasPrefix(text, "Uploading files") || strings.HasPrefix(text, "Uploading app files from"):
+	case strings.HasPrefix(text, "Uploading files") || strings.HasPrefix(text, "Uploading app files from") || strings.HasPrefix(text, "Uploading "+report.AppName):
 		report.UploadingStart = time.Now()
 		return "Uploading"
 
-	case strings.HasPrefix(text, "Staging app") || strings.HasPrefix(text, "Staging..."):
+	case strings.HasPrefix(text, "Staging app") || strings.HasPrefix(text, "Staging...") || strings.HasPrefix(text, "Done uploading"):
 		report.StagingStart = time.Now()
 		return "Staging"
 
-	case strings.HasPrefix(text, "Waiting for app to start...") || strings.HasPrefix(text, "Successfully destroyed container"):
+	case strings.HasPrefix(text, "Waiting for app to start...") || strings.HasPrefix(text, "Successfully destroyed container") || strings.Contains(text, "successfully destroyed container for instance"):
 		report.StartingStart = time.Now()
 		return "Starting"
 
@@ -114,4 +116,13 @@ func (report *PushReport) ParseUpdate(text string) string {
 	}
 
 	return ""
+}
+
+// HasTimeDetails returns true if detailed times for each push step are available
+func (report *PushReport) HasTimeDetails() bool {
+	return report.InitTime() > time.Duration(0) &&
+		report.CreatingTime() > time.Duration(0) &&
+		report.UploadingTime() > time.Duration(0) &&
+		report.StagingTime() > time.Duration(0) &&
+		report.StartingTime() > time.Duration(0)
 }
