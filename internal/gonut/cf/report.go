@@ -21,9 +21,21 @@
 package cf
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v2"
+)
+
+//OutputType report output type
+type OutputType int
+
+// Currently, we support JSON and YAML
+const (
+	JSON = OutputType(iota)
+	YAML
 )
 
 // PushReport encapsules details of a Cloud Foundry push command
@@ -125,4 +137,14 @@ func (report *PushReport) HasTimeDetails() bool {
 		report.UploadingTime() > time.Duration(0) &&
 		report.StagingTime() > time.Duration(0) &&
 		report.StartingTime() > time.Duration(0)
+}
+
+//ToJSON marshall PushReport as json
+func (report *PushReport) ToJSON() ([]byte, error) {
+	return json.Marshal(&report)
+}
+
+//ToYAML marshall PushReport as yaml
+func (report *PushReport) ToYAML() ([]byte, error) {
+	return yaml.Marshal(&report)
 }
