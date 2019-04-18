@@ -1,0 +1,111 @@
+Using manifest file /tmp/manifest.yml
+
+Creating app the-app-name in org test-org / space test-space as foobar@foobar.com...
+OK
+
+Creating route the-app-name.foobar.com...
+OK
+
+Binding the-app-name.foobar.com to the-app-name...
+OK
+
+Uploading the-app-name...
+Uploading app files from: /tmp
+Uploading 278B, 2 files
+
+                             
+Done uploading
+OK
+
+Starting app the-app-name in org test-org / space test-space as foobar@foobar.com...
+Downloading dotnet-core_v2_2-20190327-1013...
+Downloading python_buildpack...
+Downloading staticfile_buildpack...
+Downloading swift_buildpack...
+Downloading swift_buildpack_v2_0_18-20190303-1915...
+Downloaded dotnet-core_v2_2-20190327-1013
+Downloaded swift_buildpack
+Downloaded swift_buildpack_v2_0_18-20190303-1915
+Downloading liberty-for-java...
+Downloaded python_buildpack
+Downloading ruby_buildpack...
+Downloading java_buildpack...
+Downloaded staticfile_buildpack
+Downloading sdk-for-nodejs...
+Downloading nodejs_buildpack...
+Downloaded liberty-for-java
+Downloading dotnet-core...
+Downloaded java_buildpack
+Downloading go_buildpack...
+Downloaded ruby_buildpack
+Downloading xpages_buildpack...
+Downloaded nodejs_buildpack
+Downloading binary_buildpack...
+Downloaded sdk-for-nodejs
+Downloading swift_buildpack_v2_0_17-20190212-2123...
+Downloaded dotnet-core
+Downloading liberty-for-java_v3_29-20190223-2128...
+Downloaded binary_buildpack
+Downloading php_buildpack...
+Downloaded go_buildpack
+Downloading liberty-for-java_v3_30-20190325-1301...
+Downloaded swift_buildpack_v2_0_17-20190212-2123
+Downloading sdk-for-nodejs_v3_25_1-20190115-1637...
+Downloaded xpages_buildpack
+Downloading dotnet-core_v2_1-20181205-1536...
+Downloaded liberty-for-java_v3_29-20190223-2128
+Downloading sdk-for-nodejs_v3_26-20190313-1440...
+Downloaded liberty-for-java_v3_30-20190325-1301
+Downloaded dotnet-core_v2_1-20181205-1536
+Downloaded sdk-for-nodejs_v3_25_1-20190115-1637
+Downloaded php_buildpack
+Downloaded sdk-for-nodejs_v3_26-20190313-1440
+Cell 17f28692-37fd-4302-88ed-202163afa53f creating container for instance 516cfc92-3774-4607-b24a-36cac3f5078e
+Cell 17f28692-37fd-4302-88ed-202163afa53f successfully created container for instance 516cfc92-3774-4607-b24a-36cac3f5078e
+Downloading app package...
+Downloaded app package (314B)
+-----> Staticfile Buildpack version 1.4.35
+-----> Installing nginx
+       Using nginx version 1.15.6
+-----> Installing nginx 1.15.6
+       Download [https://buildpacks.cloudfoundry.org/dependencies/nginx-static/nginx-1.15.6-linux-x64-cflinuxfs2-d8a2c4eb.tgz]
+-----> Root folder /tmp/app
+-----> Copying project files into public
+-----> Configuring nginx
+Exit status 0
+Uploading droplet, build artifacts cache...
+Uploading build artifacts cache...
+Uploading droplet...
+Uploaded build artifacts cache (2.7M)
+Uploaded droplet (2.8M)
+Uploading complete
+Cell 17f28692-37fd-4302-88ed-202163afa53f stopping instance 516cfc92-3774-4607-b24a-36cac3f5078e
+Cell 17f28692-37fd-4302-88ed-202163afa53f destroying container for instance 516cfc92-3774-4607-b24a-36cac3f5078e
+Cell 17f28692-37fd-4302-88ed-202163afa53f successfully destroyed container for instance 516cfc92-3774-4607-b24a-36cac3f5078e
+
+0 of 1 instances running, 1 starting
+1 of 1 instances running
+
+App started
+
+
+OK
+
+App the-app-name was started using this command `$HOME/boot.sh`
+
+Showing health and status for app the-app-name in org test-org / space test-space as foobar@foobar.com...
+OK
+
+requested state: started
+instances: 1/1
+usage: 64M x 1 instances
+urls: the-app-name.foobar.com
+last uploaded: Thu Apr 18 07:42:55 UTC 2019
+stack: cflinuxfs2
+buildpack: staticfile
+
+     state     since                    cpu    memory     disk       details
+#0   running   2019-04-18 02:43:19 AM   0.0%   0 of 64M   0 of 64M
+
+Deleting app the-app-name in org test-org / space test-space as foobar@foobar.com...
+OK

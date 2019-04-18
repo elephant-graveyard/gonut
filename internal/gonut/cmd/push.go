@@ -206,13 +206,15 @@ func runSampleAppPush(app sampleApp) error {
 
 	case "full":
 		bunt.Printf("Successfully pushed *%s* sample app in CadetBlue{%s}:\n", app.caption, humanReadableDuration(report.ElapsedTime()))
-		bunt.Printf("  _initialisation_: SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
-		bunt.Printf("        _creating_: SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
-		bunt.Printf("       _uploading_: SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
-		bunt.Printf("         _staging_: SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
-		bunt.Printf("        _starting_: SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
-		bunt.Printf("       _buildpack_: BurlyWood{%s}\n", report.Buildpack())
-		bunt.Printf("           _stack_: BurlyWood{%s}\n", report.Stack())
+		bunt.Printf("     DimGray{_stack:_} DarkSeaGreen{%s}\n", report.Stack())
+		bunt.Printf(" DimGray{_buildpack:_} DarkSeaGreen{%s}\n", report.Buildpack())
+		if report.HasTimeDetails() {
+			bunt.Printf("   DimGray{_ramp-up:_} SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
+			bunt.Printf("  DimGray{_creating:_} SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
+			bunt.Printf(" DimGray{_uploading:_} SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
+			bunt.Printf("   DimGray{_staging:_} SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
+			bunt.Printf("  DimGray{_starting:_} SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
+		}
 		bunt.Printf("\n")
 	}
 
