@@ -5,7 +5,7 @@ go:
 - 1.12.x
 
 install:
-- curl -fsL https://ibm.biz/Bd2645 | bash -s v1.2.6 # pina-golada
+- curl -fsL https://ibm.biz/Bd2645 | bash -s v1.3.2 # pina-golada
 - curl -fsL https://goo.gl/g1CpPX | bash -s v1.0.7 # golang-dev-tools
 
 script:
