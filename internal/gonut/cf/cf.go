@@ -110,15 +110,16 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		report.InitStart = time.Now()
 
 		if output, err := cf(updates, "push", appName); err != nil {
+			caption := fmt.Sprintf("failed to push application %s to Cloud Foundry", appName)
+
+			// Redefine caption in case Cloud Foundry gives us staging failure details
 			if app, appDetailsError := getApp(appName); appDetailsError == nil {
 				if app.Entity.StagingFailedDescription != nil && app.Entity.StagingFailedReason != nil {
-					return Errorf(
-						fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
-						fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason),
-					)
+					caption = fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason)
 				}
 			}
 
+			// Try to get recent app logs to be appended to the error output
 			if recentLogs, err := cf(nil, "logs", appName, "--recent"); err == nil {
 				output = fmt.Sprintf("%s\n\nApplication logs:\n%s",
 					output,
@@ -126,10 +127,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 				)
 			}
 
-			return Errorf(
-				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
-				output,
-			)
+			return Errorf(caption, output)
 		}
 
 		// Note the timestamp when the push has finished
