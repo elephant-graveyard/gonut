@@ -32,7 +32,7 @@ func cleanUp(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if err := cf.DeleteApps(appsToClean); err != nil {
+	if err := cf.DeleteApps(appsToClean, Verbose); err != nil {
 		return err
 	}
 

@@ -43,9 +43,13 @@ It is written in Golang and uses CornflowerBlue{~https://github.com/homeport/pin
 include arbitrary sample app data in the application binary.`),
 }
 
+// Verbose is a global flag for all commands to indicate whether to be verbose or not
+var Verbose bool
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

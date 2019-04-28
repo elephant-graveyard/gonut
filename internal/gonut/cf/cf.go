@@ -40,7 +40,7 @@ import (
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
-func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) (*PushReport, error) {
+func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting, verbose bool) (*PushReport, error) {
 	if !isLoggedIn() {
 		return nil, Errorf(
 			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -61,30 +61,32 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 
 	err := runWithTempDir(func(path string) error {
 		// Changed during each step of the verification process
-		step := "Ramp-up"
+		var updates chan string
 
-		spinner := wait.NewProgressIndicator("*%s*, DimGray{%s}", caption, step)
-		spinner.Start()
-		defer spinner.Stop()
+		if verbose {
+			step := "Ramp-up"
+			spinner := wait.NewProgressIndicator("*%s*, DimGray{%s}", caption, step)
+			spinner.Start()
+			defer spinner.Stop()
 
-		updates := make(chan string)
-		defer close(updates)
-		go func() {
-			for update := range updates {
-				if text := strings.Trim(update, " "); len(text) > 0 {
-					if result := report.ParseUpdate(text); result != "" {
-						step = result
+			updates = make(chan string)
+			defer close(updates)
+			go func() {
+				for update := range updates {
+					if text := strings.Trim(update, " "); len(text) > 0 {
+						if result := report.ParseUpdate(text); result != "" {
+							step = result
+						}
+
+						spinner.SetText("*%s*, DimGray{%s} - %s",
+							caption,
+							step,
+							text,
+						)
 					}
-
-					spinner.SetText("*%s*, DimGray{%s} - %s",
-						caption,
-						step,
-						text,
-					)
 				}
-			}
-		}()
-
+			}()
+		}
 		if err := files.WriteToDisk(directory, path, true); err != nil {
 			return Errorf(
 				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -161,25 +163,28 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 }
 
 //DeleteApps iterates over the apps in the slice and delete them
-func DeleteApps(apps []AppDetails) error {
-	caption := "Cleaning Up"
-	spinner := wait.NewProgressIndicator("*%s*", caption)
-	spinner.Start()
-	defer spinner.Stop()
+func DeleteApps(apps []AppDetails, verbose bool) error {
 
-	updates := make(chan string)
-	defer close(updates)
-	go func() {
-		for update := range updates {
-			if text := strings.Trim(update, " "); len(text) > 0 {
-				spinner.SetText("*%s*, %s",
-					caption,
-					text,
-				)
+	var updates chan string
+	if verbose {
+		caption := "Cleaning Up"
+		spinner := wait.NewProgressIndicator("*%s*", caption)
+		spinner.Start()
+		defer spinner.Stop()
+
+		updates = make(chan string)
+		defer close(updates)
+		go func() {
+			for update := range updates {
+				if text := strings.Trim(update, " "); len(text) > 0 {
+					spinner.SetText("*%s*, %s",
+						caption,
+						text,
+					)
+				}
 			}
-		}
-	}()
-
+		}()
+	}
 	for _, app := range apps {
 		if err := deleteApp(updates, app); err != nil {
 			return err

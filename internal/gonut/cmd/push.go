@@ -189,7 +189,7 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting)
+	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting, Verbose)
 	if err != nil {
 		return err
 	}
