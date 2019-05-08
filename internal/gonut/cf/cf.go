@@ -188,6 +188,23 @@ func DeleteApps(apps []AppDetails) error {
 	return nil
 }
 
+// HasBuildpack returns true if Cloud Foundry reports that a buildpack with the
+// given name exists in the list of installed buildpacks
+func HasBuildpack(buildpackName string) (bool, error) {
+	buildpacks, err := getBuildpacks()
+	if err != nil {
+		return false, err
+	}
+
+	for _, buildpack := range buildpacks {
+		if buildpack.Entity.Name == buildpackName {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func deleteApp(updates chan string, app AppDetails) error {
 
 	if !isLoggedIn() {
@@ -299,6 +316,32 @@ func getBuildpack(appName string) (*BuildpackDetails, error) {
 	}
 
 	return cfCurlBuildpackByGUID(app.Entity.DetectedBuildpackGUID)
+}
+
+func getBuildpacks() ([]BuildpackDetails, error) {
+	result := []BuildpackDetails{}
+	nextURL := "/v2/buildpacks?results-per-page=10"
+
+	for {
+		if len(nextURL) == 0 {
+			break
+		}
+
+		output, err := cf(nil, "curl", nextURL)
+		if err != nil {
+			return nil, err
+		}
+
+		var buildpackPage BuildpackPage
+		if err := json.Unmarshal([]byte(output), &buildpackPage); err != nil {
+			return nil, err
+		}
+
+		result = append(result, buildpackPage.Resources...)
+		nextURL = buildpackPage.NextURL
+	}
+
+	return result, nil
 }
 
 func getStack(appName string) (*StackDetails, error) {
