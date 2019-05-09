@@ -175,3 +175,12 @@ type AppsPage struct {
 	NextURL   string       `json:"next_url"`
 	Resources []AppDetails `json:"resources"`
 }
+
+// BuildpackPage represents the result of cf curl /v2/buildpacks output
+type BuildpackPage struct {
+	TotalResults int                `json:"total_results"`
+	TotalPages   int                `json:"total_pages"`
+	PrevURL      string             `json:"prev_url"`
+	NextURL      string             `json:"next_url"`
+	Resources    []BuildpackDetails `json:"resources"`
+}
