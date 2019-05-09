@@ -110,15 +110,16 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		report.InitStart = time.Now()
 
 		if output, err := cf(updates, "push", appName); err != nil {
+			caption := fmt.Sprintf("failed to push application %s to Cloud Foundry", appName)
+
+			// Redefine caption in case Cloud Foundry gives us staging failure details
 			if app, appDetailsError := getApp(appName); appDetailsError == nil {
 				if app.Entity.StagingFailedDescription != nil && app.Entity.StagingFailedReason != nil {
-					return Errorf(
-						fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
-						fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason),
-					)
+					caption = fmt.Sprintf("%s (%s)", app.Entity.StagingFailedDescription, app.Entity.StagingFailedReason)
 				}
 			}
 
+			// Try to get recent app logs to be appended to the error output
 			if recentLogs, err := cf(nil, "logs", appName, "--recent"); err == nil {
 				output = fmt.Sprintf("%s\n\nApplication logs:\n%s",
 					output,
@@ -126,10 +127,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 				)
 			}
 
-			return Errorf(
-				fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
-				output,
-			)
+			return Errorf(caption, output)
 		}
 
 		// Note the timestamp when the push has finished
@@ -188,6 +186,23 @@ func DeleteApps(apps []AppDetails) error {
 		}
 	}
 	return nil
+}
+
+// HasBuildpack returns true if Cloud Foundry reports that a buildpack with the
+// given name exists in the list of installed buildpacks
+func HasBuildpack(buildpackName string) (bool, error) {
+	buildpacks, err := getBuildpacks()
+	if err != nil {
+		return false, err
+	}
+
+	for _, buildpack := range buildpacks {
+		if buildpack.Entity.Name == buildpackName {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func deleteApp(updates chan string, app AppDetails) error {
@@ -301,6 +316,32 @@ func getBuildpack(appName string) (*BuildpackDetails, error) {
 	}
 
 	return cfCurlBuildpackByGUID(app.Entity.DetectedBuildpackGUID)
+}
+
+func getBuildpacks() ([]BuildpackDetails, error) {
+	result := []BuildpackDetails{}
+	nextURL := "/v2/buildpacks?results-per-page=10"
+
+	for {
+		if len(nextURL) == 0 {
+			break
+		}
+
+		output, err := cf(nil, "curl", nextURL)
+		if err != nil {
+			return nil, err
+		}
+
+		var buildpackPage BuildpackPage
+		if err := json.Unmarshal([]byte(output), &buildpackPage); err != nil {
+			return nil, err
+		}
+
+		result = append(result, buildpackPage.Resources...)
+		nextURL = buildpackPage.NextURL
+	}
+
+	return result, nil
 }
 
 func getStack(appName string) (*StackDetails, error) {

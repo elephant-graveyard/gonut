@@ -40,6 +40,7 @@ var GonutAppPrefix = "gonut"
 
 type sampleApp struct {
 	caption       string
+	buildpack     string
 	command       string
 	aliases       []string
 	appNamePrefix string
@@ -55,6 +56,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "Golang",
 		command:       "golang",
+		buildpack:     "go_buildpack",
 		aliases:       []string{"go"},
 		appNamePrefix: fmt.Sprintf("%s-golang-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.GoSampleApp,
@@ -63,6 +65,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "Python",
 		command:       "python",
+		buildpack:     "python_buildpack",
 		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-python-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.PythonSampleApp,
@@ -71,6 +74,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "PHP",
 		command:       "php",
+		buildpack:     "php_buildpack",
 		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-php-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.PHPSampleApp,
@@ -79,6 +83,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "Staticfile",
 		command:       "staticfile",
+		buildpack:     "staticfile_buildpack",
 		aliases:       []string{"static"},
 		appNamePrefix: fmt.Sprintf("%s-staticfile-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.StaticfileSampleApp,
@@ -87,6 +92,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "Swift",
 		command:       "swift",
+		buildpack:     "swift_buildpack",
 		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-swift-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.SwiftSampleApp,
@@ -95,6 +101,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "NodeJS",
 		command:       "nodejs",
+		buildpack:     "nodejs_buildpack",
 		aliases:       []string{"node"},
 		appNamePrefix: fmt.Sprintf("%s-nodejs-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.NodeJSSampleApp,
@@ -103,6 +110,7 @@ var sampleApps = []sampleApp{
 	{
 		caption:       "Ruby",
 		command:       "ruby",
+		buildpack:     "ruby_buildpack",
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
@@ -167,6 +175,21 @@ func genericCommandFunc(cmd *cobra.Command, args []string) {
 }
 
 func runSampleAppPush(app sampleApp) error {
+	hasBuildpack, err := cf.HasBuildpack(app.buildpack)
+	if err != nil {
+		return err
+	}
+
+	// Skip sample app push if desired buildpack is unavailable
+	if !hasBuildpack {
+		bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} installed.\n",
+			app.caption,
+			app.buildpack,
+		)
+
+		return nil
+	}
+
 	var cleanupSetting cf.AppCleanupSetting
 	switch deleteSetting {
 	case "always":
