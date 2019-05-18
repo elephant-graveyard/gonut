@@ -26,7 +26,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/homeport/gonut/internal/gonut/cf"
+	"github.com/homeport/gonut/internal/gonut/nok"
 	"github.com/homeport/gonvenience/pkg/v1/bunt"
 )
 
@@ -55,7 +55,7 @@ func Execute() {
 // ExitGonut leaves gonut in case of an unresolvable error situation
 func ExitGonut(reason interface{}) {
 	switch typed := reason.(type) {
-	case *cf.ErrorWithDetails:
+	case *nok.ErrorWithDetails:
 		bunt.Printf("*Error:* _%s_\n", typed.Caption)
 		fmt.Printf("%s\n\n", typed.Details)
 

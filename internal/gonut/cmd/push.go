@@ -34,8 +34,8 @@ import (
 	"github.com/homeport/pina-golada/pkg/files"
 )
 
-//GonutAppPrefix is the prefeix for gonuts applications, it is also used by
-//the cleanup command to decide whether an app is pushed by gonut or not
+// GonutAppPrefix is the prefeix for gonuts applications, it is also used by the
+// cleanup command to decide whether an app is pushed by gonut or not.
 var GonutAppPrefix = "gonut"
 
 type sampleApp struct {
