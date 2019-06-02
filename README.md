@@ -6,6 +6,8 @@
 [![GoDoc](https://godoc.org/github.com/homeport/gonut?status.svg)](https://godoc.org/github.com/homeport/gonut)
 [![Release](https://img.shields.io/github/release/homeport/gonut.svg)](https://github.com/homeport/gonut/releases/latest)
 
+![gonut](.docs/logo.png?raw=true "Gonut logo - molten chocolate covering a donut")
+
 ## Introducing gonut
 
 `gonut` is a portable tool to help you verify whether you can push a sample app to a Cloud Foundry. It will push an app to Cloud Foundry and delete it afterwards. The apps are embedded into the `gonut` binary, so you just have to install `gonut` and you are set.
