@@ -27,10 +27,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/text"
 	"github.com/homeport/gonut/internal/gonut/assets"
 	"github.com/homeport/gonut/internal/gonut/cf"
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/homeport/gonvenience/pkg/v1/text"
 	"github.com/homeport/pina-golada/pkg/files"
 )
 
