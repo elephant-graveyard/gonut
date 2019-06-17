@@ -23,7 +23,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
+	"github.com/gonvenience/bunt"
 	"github.com/spf13/cobra"
 )
 

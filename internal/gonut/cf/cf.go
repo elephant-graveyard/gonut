@@ -33,9 +33,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/wait"
 	"github.com/homeport/gonut/internal/gonut/nok"
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
-	"github.com/homeport/gonvenience/pkg/v1/wait"
 	"github.com/homeport/pina-golada/pkg/files"
 	"github.com/mitchellh/go-homedir"
 )

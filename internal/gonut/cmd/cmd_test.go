@@ -21,17 +21,17 @@
 package cmd_test
 
 import (
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	. "github.com/gonvenience/bunt"
 	. "github.com/homeport/gonut/internal/gonut/cmd"
 )
 
 var _ = Describe("Gonut Command Package tests", func() {
 	Context("Version sub-command", func() {
 		BeforeEach(func() {
-			bunt.ColorSetting = bunt.OFF
+			ColorSetting = OFF
 		})
 
 		It("should return the development version by default", func() {

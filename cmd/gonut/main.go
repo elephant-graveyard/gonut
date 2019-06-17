@@ -25,8 +25,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gonvenience/term"
 	"github.com/homeport/gonut/internal/gonut/cmd"
-	"github.com/homeport/gonvenience/pkg/v1/term"
 )
 
 func main() {

@@ -26,8 +26,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/gonvenience/bunt"
 	"github.com/homeport/gonut/internal/gonut/nok"
-	"github.com/homeport/gonvenience/pkg/v1/bunt"
 )
 
 // rootCmd represents the base command when called without any sub-commands
