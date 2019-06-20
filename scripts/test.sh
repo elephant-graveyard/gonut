@@ -26,13 +26,14 @@ echo -e '\n\033[1mCompiling assets:\033[0m'
 pina-golada generate
 
 GO111MODULE=on ginkgo -r \
-  --randomizeAllSpecs \
-  --randomizeSuites \
-  --failOnPending \
-  --nodes=4 \
-  --compilers=2 \
-  --race \
-  --trace
+  -randomizeAllSpecs \
+  -randomizeSuites \
+  -failOnPending \
+  -nodes=4 \
+  -compilers=2 \
+  -race \
+  -trace \
+  -cover
 
 pina-golada cleanup
 echo -e '\n\033[1mCleaned up assets\033[0m'
