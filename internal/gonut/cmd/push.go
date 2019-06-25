@@ -21,13 +21,16 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/neat"
 	"github.com/gonvenience/text"
 	"github.com/homeport/gonut/internal/gonut/assets"
 	"github.com/homeport/gonut/internal/gonut/cf"
@@ -228,17 +231,27 @@ func runSampleAppPush(app sampleApp) error {
 		)
 
 	case "full":
-		bunt.Printf("Successfully pushed *%s* sample app in CadetBlue{%s}:\n", app.caption, humanReadableDuration(report.ElapsedTime()))
-		bunt.Printf("     DimGray{_stack:_} DarkSeaGreen{%s}\n", report.Stack())
-		bunt.Printf(" DimGray{_buildpack:_} DarkSeaGreen{%s}\n", report.Buildpack())
-		if report.HasTimeDetails() {
-			bunt.Printf("   DimGray{_ramp-up:_} SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
-			bunt.Printf("  DimGray{_creating:_} SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
-			bunt.Printf(" DimGray{_uploading:_} SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
-			bunt.Printf("   DimGray{_staging:_} SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
-			bunt.Printf("  DimGray{_starting:_} SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
+		var buf bytes.Buffer
+		bufPrintf := func(format string, a ...interface{}) {
+			buf.WriteString(bunt.Sprintf(format, a...))
 		}
-		bunt.Printf("\n")
+
+		headline := bunt.Sprintf("Successfully pushed *%s* sample app in CadetBlue{%s}",
+			app.caption,
+			humanReadableDuration(report.ElapsedTime()),
+		)
+
+		bufPrintf("     DimGray{_stack:_} DarkSeaGreen{%s}\n", report.Stack())
+		bufPrintf(" DimGray{_buildpack:_} DarkSeaGreen{%s}\n", report.Buildpack())
+		if report.HasTimeDetails() {
+			bufPrintf("   DimGray{_ramp-up:_} SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
+			bufPrintf("  DimGray{_creating:_} SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
+			bufPrintf(" DimGray{_uploading:_} SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
+			bufPrintf("   DimGray{_staging:_} SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
+			bufPrintf("  DimGray{_starting:_} SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
+		}
+
+		neat.Box(os.Stdout, headline, &buf)
 	}
 
 	return nil

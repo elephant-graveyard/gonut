@@ -33,7 +33,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/wait"
 	"github.com/homeport/gonut/internal/gonut/nok"
 	"github.com/homeport/pina-golada/pkg/files"
@@ -372,11 +371,8 @@ func cf(updates chan string, args ...string) (string, error) {
 	}()
 
 	scanner := bufio.NewScanner(read)
-
 	for scanner.Scan() {
-		// TODO As long as the bunt package cannot handle arbitrary long strings
-		// with color markers, remove the color to avoid panics during runtime.
-		line := bunt.RemoveAllEscapeSequences(scanner.Text())
+		line := scanner.Text()
 
 		// Some cloud controller versions return unwanted control characters
 		// that are better be removed to achieve a clean output
