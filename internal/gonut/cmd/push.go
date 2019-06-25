@@ -220,7 +220,7 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	switch summarySetting {
+	switch strings.ToLower(summarySetting) {
 	case "quiet":
 		// Nothing to report
 
@@ -229,6 +229,22 @@ func runSampleAppPush(app sampleApp) error {
 			app.caption,
 			humanReadableDuration(report.ElapsedTime()),
 		)
+
+	case "json":
+		out, err := neat.NewOutputProcessor(true, true, &neat.DefaultColorSchema).ToJSON(report.Export())
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(out)
+
+	case "yaml":
+		out, err := neat.ToYAMLString(report.Export())
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(out)
 
 	case "full":
 		var buf bytes.Buffer
