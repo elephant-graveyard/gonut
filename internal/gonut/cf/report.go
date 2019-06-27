@@ -39,8 +39,9 @@ type PushReport struct {
 	StartingStart  time.Time
 	PushEnd        time.Time
 
-	buildpack *BuildpackDetails
-	stack     *StackDetails
+	buildpack  *BuildpackDetails
+	stack      *StackDetails
+	StatusCode int
 }
 
 // InitTime is the time it takes to initialise the Cloud Foundry app push setup

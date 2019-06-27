@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -40,7 +41,7 @@ import (
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
-func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting) (*PushReport, error) {
+func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting, pingSetting bool) (*PushReport, error) {
 	if !isLoggedIn() {
 		return nil, nok.Errorf(
 			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -141,6 +142,20 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		// Gather details about the stack used for the app
 		if stack, err := getStack(appName); err == nil {
 			report.stack = stack
+		}
+
+		// If ping setting is enabled, ping the pushed app to
+		// determine its statuscode.
+		if pingSetting {
+			// Get public URL of application
+			appRoute, err := getAppRoute(appName)
+			if err != nil {
+				return err
+			}
+
+			if statusCode, err := getAppStatusCode(appRoute); err == nil {
+				report.StatusCode = statusCode
+			}
 		}
 
 		// If cleanup setting is set to OnSuccess, run the app removal and
@@ -289,6 +304,27 @@ func getApp(appName string) (*AppDetails, error) {
 	return cfCurlAppByGUID(appGUID)
 }
 
+// getAppRoute returns the public URL of the application
+// using its name and the Cloud Foundry host domain.
+func getAppRoute(appName string) (string, error) {
+	domain, err := getDomain(appName)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("http://%s.%s", appName, domain), nil
+}
+
+// getAppStatusCode sends a GET request to the given URL
+// and returns the statuscode.
+func getAppStatusCode(appRoute string) (int, error) {
+	resp, err := http.Get(appRoute)
+	if err != nil {
+		return 0, err
+	}
+	return resp.StatusCode, nil
+}
+
 // GetApps gets all Apps of the targeted org and space
 func GetApps() ([]AppDetails, error) {
 	if !isLoggedIn() {
@@ -350,6 +386,33 @@ func getStack(appName string) (*StackDetails, error) {
 	}
 
 	return cfCurlStackURL(app.Entity.StackURL)
+}
+
+// getDomain returns the current Cloud Foundry host
+// domain of the application.
+func getDomain(appName string) (string, error) {
+	app, err := getApp(appName)
+	if err != nil {
+		return "", err
+	}
+
+	// Get route details of the application
+	routesURL := app.Entity.RoutesURL
+	routePage, err := cfCurlRouteURL(routesURL)
+	if err != nil {
+		return "", err
+	}
+
+	// Get domain details of the application
+	domainGUID := routePage.Resources[0].Entity.DomainGUID // Resources route always contains only one element
+	domainDetails, err := cfCurlDomainByGUID(domainGUID)
+	if err != nil {
+		return "", err
+	}
+
+	// Get domain string from domain details
+	domain := domainDetails.Entity.Name
+	return domain, nil
 }
 
 func cf(updates chan string, args ...string) (string, error) {
@@ -470,4 +533,32 @@ func cfCurlStackURL(stackURL string) (*StackDetails, error) {
 	}
 
 	return &stack, nil
+}
+
+func cfCurlRouteURL(routesURL string) (*RoutePage, error) {
+	result, err := cf(nil, "curl", routesURL)
+	if err != nil {
+		return nil, err
+	}
+
+	var route RoutePage
+	if err := json.Unmarshal([]byte(result), &route); err != nil {
+		return nil, err
+	}
+
+	return &route, nil
+}
+
+func cfCurlDomainByGUID(domainGUID string) (*DomainDetails, error) {
+	result, err := cf(nil, "curl", fmt.Sprintf("/v2/shared_domains/%s", domainGUID))
+	if err != nil {
+		return nil, err
+	}
+
+	var domain DomainDetails
+	if err := json.Unmarshal([]byte(result), &domain); err != nil {
+		return nil, err
+	}
+
+	return &domain, nil
 }

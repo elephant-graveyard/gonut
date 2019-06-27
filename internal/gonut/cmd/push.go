@@ -53,6 +53,7 @@ type sampleApp struct {
 var (
 	deleteSetting  string
 	summarySetting string
+	pingSetting    bool
 )
 
 var sampleApps = []sampleApp{
@@ -131,6 +132,7 @@ func init() {
 
 	pushCmd.PersistentFlags().StringVarP(&deleteSetting, "delete", "d", "always", "Delete application after push: always, never, on-success")
 	pushCmd.PersistentFlags().StringVarP(&summarySetting, "summary", "s", "short", "Push summary detail level: quiet, short, full")
+	pushCmd.PersistentFlags().BoolVarP(&pingSetting, "ping", "p", false, "Ping application after push to check the responding statuscode")
 
 	for _, sampleApp := range sampleApps {
 		pushCmd.AddCommand(&cobra.Command{
@@ -208,6 +210,11 @@ func runSampleAppPush(app sampleApp) error {
 		return fmt.Errorf("unsupported delete setting: %s", deleteSetting)
 	}
 
+	// If summary is set to full, enable pinging to display it in the summary.
+	if summarySetting == "full" {
+		pingSetting = true
+	}
+
 	appName := text.RandomStringWithPrefix(app.appNamePrefix, 32)
 
 	directory, err := app.assetFunc()
@@ -215,9 +222,25 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting)
+	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting, pingSetting)
 	if err != nil {
 		return err
+	}
+
+	// If ping setting is enabled but the summary is not set to full,
+	// show a single message with the statuscode.
+	if pingSetting && summarySetting != "full" {
+		if report.StatusCode == 200 { //ok-statuscode
+			bunt.Printf("Pushed *%s* sample app returned the statuscode Green{%d}.\n",
+				app.caption,
+				report.StatusCode,
+			)
+		} else {
+			bunt.Printf("Pushed *%s* sample app returned non-ok statuscode Red{%d}.\n",
+				app.caption,
+				report.StatusCode,
+			)
+		}
 	}
 
 	switch strings.ToLower(summarySetting) {
@@ -259,6 +282,12 @@ func runSampleAppPush(app sampleApp) error {
 
 		bufPrintf("     DimGray{_stack:_} DarkSeaGreen{%s}\n", report.Stack())
 		bufPrintf(" DimGray{_buildpack:_} DarkSeaGreen{%s}\n", report.Buildpack())
+		// set color according to the statuscode
+		if report.StatusCode == 200 {
+			bufPrintf(" DimGray{_statuscode:_} Green{%d}\n", report.StatusCode)
+		} else {
+			bufPrintf(" DimGray{_statuscode:_} Red{%d}\n", report.StatusCode)
+		}
 		if report.HasTimeDetails() {
 			bufPrintf("   DimGray{_ramp-up:_} SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
 			bufPrintf("  DimGray{_creating:_} SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
