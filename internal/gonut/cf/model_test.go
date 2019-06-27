@@ -70,5 +70,25 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 			Expect(stack.Entity.Name).To(BeEquivalentTo("cflinuxfs3"))
 			Expect(stack.Entity.Description).To(BeEquivalentTo("Cloud Foundry Linux-based filesystem (Ubuntu 18.04)"))
 		})
+
+		It("should parse Cloud Foundry API routes details", func() {
+			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/routes/domain-guid.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			var route RoutePage
+			Expect(json.Unmarshal(data, &route)).ToNot(HaveOccurred())
+			Expect(route.Resources[0].Entity.Host).To(BeEquivalentTo("gonut-golang-app-voeqtffdryqbbap"))
+			Expect(route.Resources[0].Entity.DomainGUID).To(BeEquivalentTo("75049093-13e9-4520-80a6-2d6fea6542bc"))
+		})
+
+		It("should parse Cloud Foundry API domains details", func() {
+			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/domains/bluemix.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			var domain DomainDetails
+			Expect(json.Unmarshal(data, &domain)).ToNot(HaveOccurred())
+			Expect(domain.Metadata.GUID).To(BeEquivalentTo("75049093-13e9-4520-80a6-2d6fea6542bc"))
+			Expect(domain.Entity.Name).To(BeEquivalentTo("eu-gb.mybluemix.net"))
+		})
 	})
 })
