@@ -22,8 +22,10 @@ package cmd
 
 import (
 	"fmt"
+	"image/color"
 
 	"github.com/gonvenience/bunt"
+	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/cobra"
 )
 
@@ -49,5 +51,12 @@ func GetVersion() string {
 		version = "development"
 	}
 
-	return bunt.Sprintf("*gonut* version DimGray{%s}\n", version)
+	lightblue, _ := colorful.MakeColor(color.RGBA{77, 173, 233, 255})
+	otherblue, _ := colorful.MakeColor(color.RGBA{63, 143, 231, 255})
+
+	return fmt.Sprintf("%s%s version %s\n",
+		bunt.Style("go", bunt.Foreground(lightblue)),
+		bunt.Style("nut", bunt.Foreground(otherblue), bunt.Bold()),
+		bunt.Style(version, bunt.Foreground(bunt.DimGray)),
+	)
 }
