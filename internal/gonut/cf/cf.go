@@ -41,7 +41,7 @@ import (
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
-func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting, pingSetting bool) (*PushReport, error) {
+func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting, noPingSetting bool) (*PushReport, error) {
 	if !isLoggedIn() {
 		return nil, nok.Errorf(
 			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -144,17 +144,32 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 			report.stack = stack
 		}
 
-		// If ping setting is enabled, ping the pushed app to
+		// If pinging is not disabled, ping the pushed app to
 		// determine its statuscode.
-		if pingSetting {
+		if !noPingSetting {
 			// Get public URL of application
 			appRoute, err := getAppRoute(appName)
 			if err != nil {
-				return err
+				return nok.Errorf(
+					fmt.Sprintf("failed to get url of application %s from Cloud Foundry", appName),
+					err.Error(),
+				)
 			}
 
 			if statusCode, err := getAppStatusCode(appRoute); err == nil {
+				if statusCode != http.StatusOK {
+					return nok.Errorf(
+						fmt.Sprintf("application %s returned a non-ok statuscode %d statuscode", appName, statusCode),
+						"The application did not return the statuscode 200. Please try to push the same sample application again.",
+					)
+				}
 				report.StatusCode = statusCode
+
+			} else {
+				return nok.Errorf(
+					fmt.Sprintf("unable to ping application %s with route %s", appName, appRoute),
+					err.Error(),
+				)
 			}
 		}
 

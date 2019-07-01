@@ -137,6 +137,12 @@ func (report *PushReport) Export() yaml.MapSlice {
 		yaml.MapItem{Key: "buildpack", Value: report.Buildpack()},
 	}
 
+	if report.StatusCode != 0 {
+		result = append(result,
+			yaml.MapItem{Key: "statuscode", Value: report.StatusCode},
+		)
+	}
+
 	if report.HasTimeDetails() {
 		result = append(result,
 			yaml.MapItem{Key: "ramp-up", Value: report.InitTime()},
