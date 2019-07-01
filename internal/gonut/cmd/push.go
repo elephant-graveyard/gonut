@@ -117,6 +117,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
+
+	{
+		caption:       "Java Spring",
+		command:       "java-spring",
+		buildpack:     "java_buildpack",
+		appNamePrefix: fmt.Sprintf("%s-java-spring-app-", GonutAppPrefix),
+		assetFunc:     assets.Provider.JavaSpringSampleApp,
+	},
 }
 
 // pushCmd represents the push command
