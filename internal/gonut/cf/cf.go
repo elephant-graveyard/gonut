@@ -159,7 +159,7 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 			if statusCode, err := getAppStatusCode(appRoute); err == nil {
 				if statusCode != http.StatusOK {
 					return nok.Errorf(
-						fmt.Sprintf("application %s returned a non-ok statuscode %d statuscode", appName, statusCode),
+						fmt.Sprintf("application %s returned a non-ok statuscode %d", appName, statusCode),
 						"The application did not return the statuscode 200. Please try to push the same sample application again.",
 					)
 				}
@@ -337,6 +337,8 @@ func getAppStatusCode(appRoute string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer resp.Body.Close()
+
 	return resp.StatusCode, nil
 }
 
