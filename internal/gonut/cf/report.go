@@ -39,8 +39,9 @@ type PushReport struct {
 	StartingStart  time.Time
 	PushEnd        time.Time
 
-	buildpack *BuildpackDetails
-	stack     *StackDetails
+	buildpack  *BuildpackDetails
+	stack      *StackDetails
+	StatusCode int
 }
 
 // InitTime is the time it takes to initialise the Cloud Foundry app push setup
@@ -134,6 +135,12 @@ func (report *PushReport) Export() yaml.MapSlice {
 	result := yaml.MapSlice{
 		yaml.MapItem{Key: "stack", Value: report.Stack()},
 		yaml.MapItem{Key: "buildpack", Value: report.Buildpack()},
+	}
+
+	if report.StatusCode != 0 {
+		result = append(result,
+			yaml.MapItem{Key: "statuscode", Value: report.StatusCode},
+		)
 	}
 
 	if report.HasTimeDetails() {

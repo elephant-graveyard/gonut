@@ -184,3 +184,50 @@ type BuildpackPage struct {
 	NextURL      string             `json:"next_url"`
 	Resources    []BuildpackDetails `json:"resources"`
 }
+
+// RouteDetails is the Go struct for the /v2/apps/<guid>/routes result JSON
+type RouteDetails struct {
+	Metadata struct {
+		GUID      string    `json:"guid"`
+		URL       string    `json:"url"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	} `json:"metadata"`
+	Entity struct {
+		Host                string      `json:"host"`
+		Path                string      `json:"path"`
+		DomainGUID          string      `json:"domain_guid"`
+		SpaceGUID           string      `json:"space_guid"`
+		ServiceInstanceGUID interface{} `json:"service_instance_guid"`
+		Port                interface{} `json:"port"`
+		DomainURL           string      `json:"domain_url"`
+		SpaceURL            string      `json:"space_url"`
+		AppsURL             string      `json:"apps_url"`
+		RouteMappingsURL    string      `json:"route_mappings_url"`
+	} `json:"entity"`
+}
+
+// RoutePage represents the result of cf curl /v2/apps/<guid>/routes output
+type RoutePage struct {
+	// TotalResults int            `json:"total_results"`
+	// TotalPages   int            `json:"total_pages"`
+	// PrevURL      string         `json:"prev_url"`
+	// NextURL      string         `json:"next_url"`
+	Resources []RouteDetails `json:"resources"`
+}
+
+// DomainDetails is the Go struct for the curl /v2/shared_domains/<guid> result JSON
+type DomainDetails struct {
+	Metadata struct {
+		GUID      string    `json:"guid"`
+		URL       string    `json:"url"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	} `json:"metadata"`
+	Entity struct {
+		Name            string      `json:"name"`
+		Internal        bool        `json:"internal"`
+		RouterGroupGUID interface{} `json:"router_group_guid"`
+		RouterGroupType interface{} `json:"router_group_type"`
+	} `json:"entity"`
+}

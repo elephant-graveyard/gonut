@@ -53,6 +53,7 @@ type sampleApp struct {
 var (
 	deleteSetting  string
 	summarySetting string
+	noPingSetting  bool
 )
 
 var sampleApps = []sampleApp{
@@ -131,6 +132,7 @@ func init() {
 
 	pushCmd.PersistentFlags().StringVarP(&deleteSetting, "delete", "d", "always", "Delete application after push: always, never, on-success")
 	pushCmd.PersistentFlags().StringVarP(&summarySetting, "summary", "s", "short", "Push summary detail level: quiet, short, full")
+	pushCmd.PersistentFlags().BoolVarP(&noPingSetting, "no-ping", "p", false, "Do not ping application after push")
 
 	for _, sampleApp := range sampleApps {
 		pushCmd.AddCommand(&cobra.Command{
@@ -215,7 +217,7 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting)
+	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting, noPingSetting)
 	if err != nil {
 		return err
 	}
@@ -259,6 +261,9 @@ func runSampleAppPush(app sampleApp) error {
 
 		bufPrintf("     DimGray{_stack:_} DarkSeaGreen{%s}\n", report.Stack())
 		bufPrintf(" DimGray{_buildpack:_} DarkSeaGreen{%s}\n", report.Buildpack())
+		if !noPingSetting {
+			bufPrintf(" DimGray{_statuscode:_} DarkSeaGreen{%d}\n", report.StatusCode)
+		}
 		if report.HasTimeDetails() {
 			bufPrintf("   DimGray{_ramp-up:_} SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
 			bufPrintf("  DimGray{_creating:_} SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
