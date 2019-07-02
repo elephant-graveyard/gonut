@@ -27,6 +27,8 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>${project.basedir}/src/app</sourceDirectory>
+	
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
