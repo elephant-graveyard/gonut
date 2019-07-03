@@ -58,4 +58,8 @@ type ProviderInterface interface {
 	// RubySampleApp returns the directory containing the Ruby sample app
 	// @pgl(asset=/assets/sample-apps/ruby/&compressor=tar)
 	RubySampleApp() (directory files.Directory, e error)
+
+	// BinarySampleApp returns the directory containing the Binary sample app
+	// @pgl(asset=/assets/sample-apps/binary/&compressor=tar)
+	BinarySampleApp() (directory files.Directory, e error)
 }

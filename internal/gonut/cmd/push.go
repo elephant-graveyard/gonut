@@ -118,6 +118,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
+
+	{
+		caption:       "Binary",
+		command:       "binary",
+		buildpack:     "binary_buildpack",
+		appNamePrefix: fmt.Sprintf("%s-binary-app-", GonutAppPrefix),
+		assetFunc:     assets.Provider.BinarySampleApp,
+	},
 }
 
 // pushCmd represents the push command
