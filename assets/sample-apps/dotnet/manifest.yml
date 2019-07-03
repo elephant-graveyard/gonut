@@ -1,0 +1,5 @@
+---
+applications:
+- name: dotnet-sample-app
+  memory: 128MB
+  disk_quota: 128MB
