@@ -119,6 +119,14 @@ var sampleApps = []sampleApp{
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
 
+  {
+		caption:       ".NET",
+		command:       "dotnet",
+		buildpack:     "dotnet-core",
+		appNamePrefix: fmt.Sprintf("%s-dotnet-app-", GonutAppPrefix),
+		assetFunc:     assets.Provider.DotNetSampleApp,
+	},
+  
 	{
 		caption:       "Binary",
 		command:       "binary",
