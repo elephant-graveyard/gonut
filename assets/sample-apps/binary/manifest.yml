@@ -1,0 +1,7 @@
+---
+applications:
+- name: binary-sample-app
+  memory: 128MB
+  disk_quota: 128MB
+  buildpacks:
+  - binary_buildpack
