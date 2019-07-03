@@ -118,6 +118,14 @@ var sampleApps = []sampleApp{
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
+
+	{
+		caption:       ".NET",
+		command:       "dotnet",
+		buildpack:     "dotnet-core",
+		appNamePrefix: fmt.Sprintf("%s-dotnet-app-", GonutAppPrefix),
+		assetFunc:     assets.Provider.DotNetSampleApp,
+	},
 }
 
 // pushCmd represents the push command
