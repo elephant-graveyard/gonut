@@ -1,7 +1,7 @@
 ---
 applications:
 - name: java-sample-app
-  memory: 640M
+  memory: 640MB
   disk_quota: 128MB
   path: App.jar
   buildpacks: 
