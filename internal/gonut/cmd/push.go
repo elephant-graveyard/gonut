@@ -21,11 +21,9 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -253,7 +251,7 @@ func runSampleAppPush(app sampleApp) error {
 	case "short", "oneline":
 		bunt.Printf("Successfully pushed *%s* sample app in CadetBlue{%s}.\n",
 			app.caption,
-			humanReadableDuration(report.ElapsedTime()),
+			cf.HumanReadableDuration(report.ElapsedTime()),
 		)
 
 	case "json":
@@ -273,66 +271,18 @@ func runSampleAppPush(app sampleApp) error {
 		fmt.Println(out)
 
 	case "full":
-		var buf bytes.Buffer
-		bufPrintf := func(format string, a ...interface{}) {
-			buf.WriteString(bunt.Sprintf(format, a...))
-		}
-
 		headline := bunt.Sprintf("Successfully pushed *%s* sample app in CadetBlue{%s}",
 			app.caption,
-			humanReadableDuration(report.ElapsedTime()),
+			cf.HumanReadableDuration(report.ElapsedTime()),
 		)
 
-		bufPrintf("     DimGray{_stack:_} DarkSeaGreen{%s}\n", report.Stack())
-		bufPrintf(" DimGray{_buildpack:_} DarkSeaGreen{%s}\n", report.Buildpack())
-		if !noPingSetting {
-			bufPrintf(" DimGray{_statuscode:_} DarkSeaGreen{%d}\n", report.StatusCode)
-		}
-		if report.HasTimeDetails() {
-			bufPrintf("   DimGray{_ramp-up:_} SteelBlue{%s}\n", humanReadableDuration(report.InitTime()))
-			bufPrintf("  DimGray{_creating:_} SteelBlue{%s}\n", humanReadableDuration(report.CreatingTime()))
-			bufPrintf(" DimGray{_uploading:_} SteelBlue{%s}\n", humanReadableDuration(report.UploadingTime()))
-			bufPrintf("   DimGray{_staging:_} SteelBlue{%s}\n", humanReadableDuration(report.StagingTime()))
-			bufPrintf("  DimGray{_starting:_} SteelBlue{%s}\n", humanReadableDuration(report.StartingTime()))
+		content, err := neat.Table(report.ExportTable(), neat.AlignRight(0))
+		if err != nil {
+			return err
 		}
 
-		neat.Box(os.Stdout, headline, &buf)
+		neat.Box(os.Stdout, headline, strings.NewReader(content))
 	}
 
 	return nil
-}
-
-func humanReadableDuration(duration time.Duration) string {
-	if duration < time.Second {
-		return "less than a second"
-	}
-
-	seconds := int(duration.Seconds())
-	minutes := 0
-	hours := 0
-
-	if seconds >= 60 {
-		minutes = seconds / 60
-		seconds = seconds % 60
-
-		if minutes >= 60 {
-			hours = minutes / 60
-			minutes = minutes % 60
-		}
-	}
-
-	parts := []string{}
-	if hours > 0 {
-		parts = append(parts, fmt.Sprintf("%d h", hours))
-	}
-
-	if minutes > 0 {
-		parts = append(parts, fmt.Sprintf("%d min", minutes))
-	}
-
-	if seconds > 0 {
-		parts = append(parts, fmt.Sprintf("%d sec", seconds))
-	}
-
-	return strings.Join(parts, " ")
 }

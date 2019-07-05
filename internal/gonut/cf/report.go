@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gonvenience/bunt"
 	"gopkg.in/yaml.v2"
 )
 
@@ -151,6 +152,30 @@ func (report *PushReport) Export() yaml.MapSlice {
 			yaml.MapItem{Key: "staging", Value: report.StagingTime()},
 			yaml.MapItem{Key: "starting", Value: report.StartingTime()},
 		)
+	}
+
+	return result
+}
+
+// ExportTable creates a less technical representation of the report in form of
+// a two-dimensional array
+func (report *PushReport) ExportTable() [][]string {
+	result := [][]string{}
+	for _, item := range report.Export() {
+		var (
+			key   string = bunt.Sprintf("DimGray{_%v_}", item.Key)
+			value string
+		)
+
+		switch obj := item.Value.(type) {
+		case time.Duration:
+			value = bunt.Sprintf("SteelBlue{%v}", HumanReadableDuration(obj))
+
+		default:
+			value = bunt.Sprintf("DarkSeaGreen{%v}", fmt.Sprintf("%v", obj))
+		}
+
+		result = append(result, []string{key, value})
 	}
 
 	return result
