@@ -119,20 +119,28 @@ var sampleApps = []sampleApp{
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
 
-  {
+	{
 		caption:       ".NET",
 		command:       "dotnet",
 		buildpack:     "dotnet-core",
 		appNamePrefix: fmt.Sprintf("%s-dotnet-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.DotNetSampleApp,
 	},
-  
+
 	{
 		caption:       "Binary",
 		command:       "binary",
 		buildpack:     "binary_buildpack",
 		appNamePrefix: fmt.Sprintf("%s-binary-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.BinarySampleApp,
+	},
+
+	{
+		caption:       "Java",
+		command:       "java",
+		buildpack:     "java_buildpack",
+		appNamePrefix: fmt.Sprintf("%s-java-app-", GonutAppPrefix),
+		assetFunc:     assets.Provider.JavaSampleApp,
 	},
 }
 

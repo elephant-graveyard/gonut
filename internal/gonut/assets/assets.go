@@ -59,11 +59,15 @@ type ProviderInterface interface {
 	// @pgl(asset=/assets/sample-apps/ruby/&compressor=tar)
 	RubySampleApp() (directory files.Directory, e error)
 
-  // DotNetSampleApp returns the directory containing the .NET sample app
+	// DotNetSampleApp returns the directory containing the .NET sample app
 	// @pgl(asset=/assets/sample-apps/dotnet/&compressor=tar)
 	DotNetSampleApp() (directory files.Directory, e error)
 
-  // BinarySampleApp returns the directory containing the Binary sample app
-  // @pgl(asset=/assets/sample-apps/binary/&compressor=tar)
-  BinarySampleApp() (directory files.Directory, e error)
+	// BinarySampleApp returns the directory containing the Binary sample app
+	// @pgl(asset=/assets/sample-apps/binary/&compressor=tar)
+	BinarySampleApp() (directory files.Directory, e error)
+
+	// JavaSampleApp returns the directory containing the Java sample app
+	// @pgl(asset=/assets/sample-apps/java/&compressor=tar)
+	JavaSampleApp() (directory files.Directory, e error)
 }
