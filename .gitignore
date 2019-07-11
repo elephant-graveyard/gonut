@@ -3,3 +3,5 @@ binaries
 
 # Generated files
 **/*/pgl*.go
+*.jar
+assets/sample-apps/binary/binary
