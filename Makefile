@@ -18,14 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-.PHONY: all clean lint vet misspell shellcheck unit-test test build
+.PHONY: all clean prereqs lint vet misspell shellcheck unit-test test build
 
 all: test build
 
 clean:
 	@rm -rf binaries
+	@assets/sample-apps-src/java/clean.sh
+	@assets/sample-apps-src/binary/clean.sh
 	@pina-golada cleanup
 	@GO111MODULE=on go clean -i -cache -testcache $(shell go list ./...)
+
+prereqs:
+	@assets/sample-apps-src/java/compile.sh
+	@assets/sample-apps-src/binary/compile.sh
 
 lint:
 	@scripts/go-lint.sh
@@ -42,7 +48,7 @@ shellcheck:
 unit-test:
 	@scripts/test.sh
 
-test: lint vet misspell shellcheck unit-test
+test: prereqs lint vet misspell shellcheck unit-test
 
-build:
+build: prereqs
 	@scripts/build.sh
