@@ -49,9 +49,10 @@ type sampleApp struct {
 }
 
 var (
-	deleteSetting  string
-	summarySetting string
-	noPingSetting  bool
+	deleteSetting    string
+	summarySetting   string
+	buildpackSetting string
+	noPingSetting    bool
 )
 
 var sampleApps = []sampleApp{
@@ -154,6 +155,7 @@ func init() {
 
 	pushCmd.PersistentFlags().StringVarP(&deleteSetting, "delete", "d", "always", "Delete application after push: always, never, on-success")
 	pushCmd.PersistentFlags().StringVarP(&summarySetting, "summary", "s", "short", "Push summary detail level: quiet, short, full")
+	pushCmd.PersistentFlags().StringVarP(&buildpackSetting, "buildpack", "b", "", "Specify buildpack for pushed application")
 	pushCmd.PersistentFlags().BoolVarP(&noPingSetting, "no-ping", "p", false, "Do not ping application after push")
 
 	for _, sampleApp := range sampleApps {
@@ -171,6 +173,7 @@ func init() {
 		Short: "Pushes all available sample apps to Cloud Foundry",
 		Long:  `Pushes all available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			buildpackSetting = ""
 			for _, sampleApp := range sampleApps {
 				if err := runSampleAppPush(sampleApp); err != nil {
 					ExitGonut(err)
@@ -202,13 +205,24 @@ func genericCommandFunc(cmd *cobra.Command, args []string) {
 }
 
 func runSampleAppPush(app sampleApp) error {
+
+	// Replace app buildpack with provided buildpack
+	if buildpackSetting != "" {
+		app.buildpack = buildpackSetting
+	}
+
 	hasBuildpack, err := cf.HasBuildpack(app.buildpack)
 	if err != nil {
 		return err
 	}
 
+	isExternalBuildpack, err := cf.IsExternalBuildpack(app.buildpack)
+	if err != nil {
+		return err
+	}
+
 	// Skip sample app push if desired buildpack is unavailable
-	if !hasBuildpack {
+	if !hasBuildpack && !isExternalBuildpack {
 		bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} installed.\n",
 			app.caption,
 			app.buildpack,
@@ -239,7 +253,12 @@ func runSampleAppPush(app sampleApp) error {
 		return err
 	}
 
-	report, err := cf.PushApp(app.caption, appName, directory, cleanupSetting, noPingSetting)
+	flags := []string{}
+	if buildpackSetting != "" {
+		flags = append(flags, "-b", buildpackSetting)
+	}
+
+	report, err := cf.PushApp(app.caption, appName, directory, flags, cleanupSetting, noPingSetting)
 	if err != nil {
 		return err
 	}
