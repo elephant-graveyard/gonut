@@ -41,7 +41,7 @@ import (
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
-func PushApp(caption string, appName string, directory files.Directory, cleanupSetting AppCleanupSetting, noPingSetting bool) (*PushReport, error) {
+func PushApp(caption string, appName string, directory files.Directory, flags []string, cleanupSetting AppCleanupSetting, noPingSetting bool) (*PushReport, error) {
 	if !isLoggedIn() {
 		return nil, nok.Errorf(
 			fmt.Sprintf("failed to push application %s to Cloud Foundry", appName),
@@ -110,7 +110,12 @@ func PushApp(caption string, appName string, directory files.Directory, cleanupS
 		// Note the timestamp when the push starts
 		report.InitStart = time.Now()
 
-		if output, err := cf(updates, "push", appName); err != nil {
+		// Concatenate flags and args to single slice
+		args := []string{"push", appName}
+		args = append(args, flags...)
+
+		// Push application using CLI
+		if output, err := cf(updates, args...); err != nil {
 			caption := fmt.Sprintf("failed to push application %s to Cloud Foundry", appName)
 
 			// Redefine caption in case Cloud Foundry gives us staging failure details
@@ -232,6 +237,29 @@ func HasBuildpack(buildpackName string) (bool, error) {
 		}
 	}
 
+	return false, nil
+}
+
+// IsExternalBuildpack returns true if the buildpackName is a valid URL which returns
+// a 200 statuscode and links to a .zip file
+func IsExternalBuildpack(buildpackName string) (bool, error) {
+	//check if buildpackName is URL
+	if strings.HasPrefix(buildpackName, "http://") || strings.HasPrefix(buildpackName, "https://") {
+		//check if URL is valid
+		resp, err := http.Get(buildpackName)
+		if err != nil {
+			return false, err
+		}
+		if resp.StatusCode == http.StatusOK {
+			//check if file has .zip format
+			urlParts := strings.Split(buildpackName, "?")
+			if strings.HasSuffix(urlParts[0], ".zip") {
+				return true, nil
+			}
+			return false, fmt.Errorf("%s is not a valid buildpack! buildpacks must be .zip files", buildpackName)
+		}
+		return false, fmt.Errorf("could not get buildpack via URL. %s returned a non-ok statuscode", buildpackName)
+	}
 	return false, nil
 }
 
