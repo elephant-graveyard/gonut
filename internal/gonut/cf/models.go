@@ -185,6 +185,15 @@ type BuildpackPage struct {
 	Resources    []BuildpackDetails `json:"resources"`
 }
 
+// StackPage represents the result of cf curl /v2/stacks output
+type StackPage struct {
+	TotalResults int            `json:"total_results"`
+	TotalPages   int            `json:"total_pages"`
+	PrevURL      string         `json:"prev_url"`
+	NextURL      string         `json:"next_url"`
+	Resources    []StackDetails `json:"resources"`
+}
+
 // RouteDetails is the Go struct for the /v2/apps/<guid>/routes result JSON
 type RouteDetails struct {
 	Metadata struct {
