@@ -42,7 +42,6 @@ var GonutAppPrefix = "gonut"
 type sampleApp struct {
 	caption       string
 	buildpack     string
-	stack         string
 	command       string
 	aliases       []string
 	appNamePrefix string
@@ -62,7 +61,6 @@ var sampleApps = []sampleApp{
 		caption:       "Golang",
 		command:       "golang",
 		buildpack:     "go_buildpack",
-		stack:         "cflinuxfs3",
 		aliases:       []string{"go"},
 		appNamePrefix: fmt.Sprintf("%s-golang-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.GoSampleApp,
@@ -72,7 +70,6 @@ var sampleApps = []sampleApp{
 		caption:       "Python",
 		command:       "python",
 		buildpack:     "python_buildpack",
-		stack:         "cflinuxfs3",
 		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-python-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.PythonSampleApp,
@@ -82,7 +79,6 @@ var sampleApps = []sampleApp{
 		caption:       "PHP",
 		command:       "php",
 		buildpack:     "php_buildpack",
-		stack:         "cflinuxfs3",
 		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-php-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.PHPSampleApp,
@@ -92,7 +88,6 @@ var sampleApps = []sampleApp{
 		caption:       "Staticfile",
 		command:       "staticfile",
 		buildpack:     "staticfile_buildpack",
-		stack:         "cflinuxfs3",
 		aliases:       []string{"static"},
 		appNamePrefix: fmt.Sprintf("%s-staticfile-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.StaticfileSampleApp,
@@ -102,7 +97,6 @@ var sampleApps = []sampleApp{
 		caption:       "Swift",
 		command:       "swift",
 		buildpack:     "swift_buildpack",
-		stack:         "cflinuxfs3",
 		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-swift-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.SwiftSampleApp,
@@ -112,7 +106,6 @@ var sampleApps = []sampleApp{
 		caption:       "NodeJS",
 		command:       "nodejs",
 		buildpack:     "nodejs_buildpack",
-		stack:         "cflinuxfs3",
 		aliases:       []string{"node"},
 		appNamePrefix: fmt.Sprintf("%s-nodejs-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.NodeJSSampleApp,
@@ -122,7 +115,6 @@ var sampleApps = []sampleApp{
 		caption:       "Ruby",
 		command:       "ruby",
 		buildpack:     "ruby_buildpack",
-		stack:         "cflinuxfs3",
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
@@ -131,7 +123,6 @@ var sampleApps = []sampleApp{
 		caption:       ".NET",
 		command:       "dotnet",
 		buildpack:     "dotnet-core",
-		stack:         "cflinuxfs3",
 		appNamePrefix: fmt.Sprintf("%s-dotnet-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.DotNetSampleApp,
 	},
@@ -166,7 +157,7 @@ func init() {
 	pushCmd.PersistentFlags().StringVarP(&deleteSetting, "delete", "d", "always", "Delete application after push: always, never, on-success")
 	pushCmd.PersistentFlags().StringVarP(&outputSetting, "output", "o", "short", "Push output detail level: quiet, short, full")
 	pushCmd.PersistentFlags().StringVarP(&buildpackSetting, "buildpack", "b", "", "Specify buildpack for pushed application")
-	pushCmd.PersistentFlags().StringVarP(&stackSetting, "stack", "s", "cflinuxfs3", "Specify stack for pushed application")
+	pushCmd.PersistentFlags().StringVarP(&stackSetting, "stack", "s", "", "Specify stack for pushed application")
 	pushCmd.PersistentFlags().BoolVarP(&noPingSetting, "no-ping", "p", false, "Do not ping application after push")
 
 	for _, sampleApp := range sampleApps {
@@ -217,36 +208,38 @@ func genericCommandFunc(cmd *cobra.Command, args []string) {
 
 func runSampleAppPush(app sampleApp) error {
 
-	flags := []string{}
+	if len(stackSetting) > 0 {
+		hasStack, err := cf.HasStack(stackSetting)
+		if err != nil {
+			return err
+		}
 
+		// Skip sample app push if desired stack is unavailable
+		if !hasStack {
+			bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} stack installed.\n",
+				app.caption,
+				app.buildpack,
+			)
+
+			return nil
+		}
+	}
+
+	// Prepare flags for cf push command
+	flags := []string{}
 	if len(buildpackSetting) > 0 {
 		app.buildpack = buildpackSetting
 		flags = append(flags, "-b", buildpackSetting)
 	}
-
-	app.stack = stackSetting
-	flags = append(flags, "-s", stackSetting)
-
-	hasStack, err := cf.HasStack(app.stack)
-	if err != nil {
-		return err
+	if len(stackSetting) > 0 {
+		flags = append(flags, "-s", stackSetting)
 	}
 
-	// Skip sample app push if desired stack is unavailable
-	if !hasStack {
-		bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} stack installed.\n",
-			app.caption,
-			app.buildpack,
-		)
-
-		return nil
-	}
-
+	// Check for buildpack existence
 	hasBuildpack, err := cf.HasBuildpack(app.buildpack)
 	if err != nil {
 		return err
 	}
-
 	isExternalBuildpack, err := cf.IsExternalBuildpack(app.buildpack)
 	if err != nil {
 		return err

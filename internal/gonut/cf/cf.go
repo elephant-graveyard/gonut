@@ -28,6 +28,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -260,22 +261,21 @@ func HasBuildpack(buildpackName string) (bool, error) {
 // IsExternalBuildpack returns true if the buildpackName is a valid URL which returns
 // a 200 statuscode and links to a .zip file
 func IsExternalBuildpack(buildpackName string) (bool, error) {
-	//check if buildpackName is URL
-	if strings.HasPrefix(buildpackName, "http://") || strings.HasPrefix(buildpackName, "https://") {
-		//check if URL is valid
+	if u, err := url.ParseRequestURI(buildpackName); err == nil {
+		// Check if URL is reachable
 		resp, err := http.Get(buildpackName)
 		if err != nil {
 			return false, err
 		}
 		if resp.StatusCode == http.StatusOK {
-			//check if file has .zip format
-			urlParts := strings.Split(buildpackName, "?")
-			if strings.HasSuffix(urlParts[0], ".zip") {
+			// Check if it links to a valid buildpack file (.zip packaged)
+			if strings.HasSuffix(u.Path, ".zip") {
 				return true, nil
 			}
 			return false, fmt.Errorf("%s is not a valid buildpack! buildpacks must be .zip files", buildpackName)
 		}
 		return false, fmt.Errorf("could not get buildpack via URL. %s returned a non-ok statuscode", buildpackName)
+
 	}
 	return false, nil
 }
