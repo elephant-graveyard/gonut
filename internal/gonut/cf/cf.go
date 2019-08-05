@@ -223,6 +223,23 @@ func DeleteApps(apps []AppDetails) error {
 	return nil
 }
 
+// HasStack returns true if Cloud Foundry that stack with the
+// given name exists in the list of installed stacks
+func HasStack(stackName string) (bool, error) {
+	stacks, err := getStacks()
+	if err != nil {
+		return false, err
+	}
+
+	for _, stack := range stacks {
+		if stack.Entity.Name == stackName {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 // HasBuildpack returns true if Cloud Foundry reports that a buildpack with the
 // given name exists in the list of installed buildpacks
 func HasBuildpack(buildpackName string) (bool, error) {
@@ -431,6 +448,32 @@ func getStack(appName string) (*StackDetails, error) {
 	}
 
 	return cfCurlStackURL(app.Entity.StackURL)
+}
+
+func getStacks() ([]StackDetails, error) {
+	result := []StackDetails{}
+	nextURL := "/v2/stacks?results-per-page=10"
+
+	for {
+		if len(nextURL) == 0 {
+			break
+		}
+
+		output, err := cf(nil, "curl", nextURL)
+		if err != nil {
+			return nil, err
+		}
+
+		var stackPage StackPage
+		if err := json.Unmarshal([]byte(output), &stackPage); err != nil {
+			return nil, err
+		}
+
+		result = append(result, stackPage.Resources...)
+		nextURL = stackPage.NextURL
+	}
+
+	return result, nil
 }
 
 // getDomain returns the current Cloud Foundry host
