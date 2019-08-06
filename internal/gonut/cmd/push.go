@@ -22,7 +22,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -183,6 +186,13 @@ func init() {
 			}
 		},
 	})
+
+	pushCmd.AddCommand(&cobra.Command{
+		Use:   "custom",
+		Short: "Pushes custom available sample apps to Cloud Foundry",
+		Long:  `Pushes custom available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
+		Run:   customCommandFunc,
+	})
 }
 
 func lookUpSampleAppByName(name string) *sampleApp {
@@ -195,15 +205,81 @@ func lookUpSampleAppByName(name string) *sampleApp {
 	return nil
 }
 
-func genericCommandFunc(cmd *cobra.Command, args []string) {
-	sampleApp := lookUpSampleAppByName(cmd.Use)
-	if sampleApp == nil {
-		ExitGonut("failed to detect which sample app is to be tested")
+func downloadAppArtifact(absoluteURL string, relativePath string) (files.Directory, error) {
+	u, err := url.Parse(absoluteURL)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := runSampleAppPush(*sampleApp); err != nil {
-		ExitGonut(err)
+	if u.Scheme == "file" {
+		directory := files.NewRootDirectory()
+		err := files.LoadFromDisk(directory, u.Path)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return directory, nil
+
 	}
+
+	//download
+
+	return nil, nil
+}
+
+func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
+	relativePath := "/"
+
+	shellRegexArtifact := regexp.MustCompile(`^((.*)@)?(.+)$`)
+	if matches := shellRegexArtifact.FindStringSubmatch(absoluteURL); len(matches) > 1 {
+		relativePath = matches[2]
+		absoluteURL = matches[3]
+	} else {
+		return nil
+	}
+
+	if u, err := url.ParseRequestURI(absoluteURL); err == nil {
+		a := strings.Split(u.Path, "/")
+		caption := a[len(a)-1]
+
+		return &sampleApp{
+			caption:       caption,
+			appNamePrefix: "custom-app-",
+			assetFunc: func() (files.Directory, error) {
+				return downloadAppArtifact(absoluteURL, relativePath)
+			},
+		}
+	}
+
+	return nil
+}
+
+func customCommandFunc(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		ExitGonut("missing app url - usage: 'gonut push custom [url]'")
+	}
+
+	sampleApp := lookUpSampleAppByURL(args[0])
+	if sampleApp != nil {
+		if err := runSampleAppPush(*sampleApp); err != nil {
+			ExitGonut(err)
+		}
+		return
+	}
+
+	ExitGonut("invalid url - could not retrieve sample app")
+}
+
+func genericCommandFunc(cmd *cobra.Command, args []string) {
+	sampleApp := lookUpSampleAppByName(cmd.Use)
+	if sampleApp != nil {
+		if err := runSampleAppPush(*sampleApp); err != nil {
+			ExitGonut(err)
+		}
+		return
+	}
+
+	ExitGonut("failed to detect which sample app is to be tested")
 }
 
 func runSampleAppPush(app sampleApp) error {
@@ -235,24 +311,26 @@ func runSampleAppPush(app sampleApp) error {
 		flags = append(flags, "-s", stackSetting)
 	}
 
-	// Check for buildpack existence
-	hasBuildpack, err := cf.HasBuildpack(app.buildpack)
-	if err != nil {
-		return err
-	}
-	isExternalBuildpack, err := cf.IsExternalBuildpack(app.buildpack)
-	if err != nil {
-		return err
-	}
+	// Check for buildpack existence for pre-defined buildpacks
+	if len(app.buildpack) > 0 {
+		hasBuildpack, err := cf.HasBuildpack(app.buildpack)
+		if err != nil {
+			return err
+		}
+		isExternalBuildpack, err := cf.IsExternalBuildpack(app.buildpack)
+		if err != nil {
+			return err
+		}
 
-	// Skip sample app push if desired buildpack is unavailable
-	if !hasBuildpack && !isExternalBuildpack {
-		bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} installed.\n",
-			app.caption,
-			app.buildpack,
-		)
+		// Skip sample app push if desired buildpack is unavailable
+		if !hasBuildpack && !isExternalBuildpack {
+			bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} installed.\n",
+				app.caption,
+				app.buildpack,
+			)
 
-		return nil
+			return nil
+		}
 	}
 
 	var cleanupSetting cf.AppCleanupSetting

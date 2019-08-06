@@ -61,7 +61,7 @@ func PushApp(caption string, appName string, directory files.Directory, flags []
 		AppName: appName,
 	}
 
-	err := runWithTempDir(func(path string) error {
+	err := RunWithTempDir(func(path string) error {
 		// Changed during each step of the verification process
 		step := "Ramp-up"
 
@@ -302,7 +302,7 @@ func deleteApp(updates chan string, app AppDetails) error {
 	return nil
 }
 
-func runWithTempDir(f func(path string) error) error {
+func RunWithTempDir(f func(path string) error) error {
 	dir, err := ioutil.TempDir("", "gonut")
 	if err != nil {
 		return err
