@@ -230,6 +230,9 @@ func downloadAppArtifact(absoluteURL string, relativePath string) (files.Directo
 func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
 	relativePath := "/"
 
+	// Regex to split URLs in an optional relative path before
+	// the '@' symbol and the required absoluteURL
+	// https://regex101.com/r/nscFeC/2
 	shellRegexArtifact := regexp.MustCompile(`^((.*)@)?(.+)$`)
 	if matches := shellRegexArtifact.FindStringSubmatch(absoluteURL); len(matches) > 1 {
 		relativePath = matches[2]
