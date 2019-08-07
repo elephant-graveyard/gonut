@@ -118,6 +118,7 @@ var sampleApps = []sampleApp{
 		caption:       "Ruby",
 		command:       "ruby",
 		buildpack:     "ruby_buildpack",
+		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
@@ -126,6 +127,7 @@ var sampleApps = []sampleApp{
 		caption:       ".NET",
 		command:       "dotnet",
 		buildpack:     "dotnet-core",
+		aliases:       []string{"node"},
 		appNamePrefix: fmt.Sprintf("%s-dotnet-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.DotNetSampleApp,
 	},
@@ -134,6 +136,7 @@ var sampleApps = []sampleApp{
 		caption:       "Binary",
 		command:       "binary",
 		buildpack:     "binary_buildpack",
+		aliases:       []string{"node"},
 		appNamePrefix: fmt.Sprintf("%s-binary-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.BinarySampleApp,
 	},
@@ -142,6 +145,7 @@ var sampleApps = []sampleApp{
 		caption:       "Java",
 		command:       "java",
 		buildpack:     "java_buildpack",
+		aliases:       []string{"node"},
 		appNamePrefix: fmt.Sprintf("%s-java-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.JavaSampleApp,
 	},
@@ -149,9 +153,11 @@ var sampleApps = []sampleApp{
 
 // pushCmd represents the push command
 var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "Push a sample app to Cloud Foundry",
-	Long:  `Use one of the sub-commands to select a sample app of a list of programming languages to be pushed to a Cloud Foundry instance.`,
+	Use:     "push [app]",
+	Short:   "Push a sample app to Cloud Foundry",
+	Long:    "Use pre-installed or remote sample apps to be pushed to a Cloud Foundry instance.",
+	Example: getOptions(),
+	Run:     pushCommandFunc,
 }
 
 func init() {
@@ -162,37 +168,6 @@ func init() {
 	pushCmd.PersistentFlags().StringVarP(&buildpackSetting, "buildpack", "b", "", "Specify buildpack for pushed application")
 	pushCmd.PersistentFlags().StringVarP(&stackSetting, "stack", "s", "", "Specify stack for pushed application")
 	pushCmd.PersistentFlags().BoolVarP(&noPingSetting, "no-ping", "p", false, "Do not ping application after push")
-
-	for _, sampleApp := range sampleApps {
-		pushCmd.AddCommand(&cobra.Command{
-			Use:     sampleApp.command,
-			Aliases: sampleApp.aliases,
-			Short:   fmt.Sprintf("Push a %s sample app to Cloud Foundry", sampleApp.caption),
-			Long:    fmt.Sprintf(`Push a %s sample app to Cloud Foundry. The application will be deleted after it was pushed successfully.`, sampleApp.caption),
-			Run:     genericCommandFunc,
-		})
-	}
-
-	pushCmd.AddCommand(&cobra.Command{
-		Use:   "all",
-		Short: "Pushes all available sample apps to Cloud Foundry",
-		Long:  `Pushes all available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			buildpackSetting = ""
-			for _, sampleApp := range sampleApps {
-				if err := runSampleAppPush(sampleApp); err != nil {
-					ExitGonut(err)
-				}
-			}
-		},
-	})
-
-	pushCmd.AddCommand(&cobra.Command{
-		Use:   "custom",
-		Short: "Pushes custom available sample apps to Cloud Foundry",
-		Long:  `Pushes custom available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
-		Run:   customCommandFunc,
-	})
 }
 
 func lookUpSampleAppByName(name string) *sampleApp {
@@ -257,35 +232,42 @@ func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
 	return nil
 }
 
-func customCommandFunc(cmd *cobra.Command, args []string) {
+func getOptions() string {
+	options := []string{"file:<path>", "http://<host>", "https://<host>", "all"}
+	for _, sampleApp := range sampleApps {
+		options = append(options, sampleApp.command)
+	}
+	return strings.Join(options, "\n")
+}
+
+func pushCommandFunc(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
-		ExitGonut("missing app url - usage: 'gonut push custom [url]'")
+		ExitGonut(fmt.Sprintf("Please provide a sample app name as argument. Valid Arguments:\n%s", getOptions()))
 	}
 
-	sampleApp := lookUpSampleAppByURL(args[0])
-	if sampleApp != nil {
-		if err := runSampleAppPush(*sampleApp); err != nil {
+	var apps []*sampleApp
+	for _, arg := range args {
+		if arg == "all" {
+			for _, app := range sampleApps {
+				apps = append(apps, &app)
+			}
+		} else if app := lookUpSampleAppByName(arg); app != nil {
+			apps = append(apps, app)
+		} else if app := lookUpSampleAppByURL(arg); app != nil {
+			apps = append(apps, app)
+		} else {
+			ExitGonut(fmt.Sprintf("Could not find %s sample app. Please use an argument from the following list:\n%s", arg, getOptions()))
+		}
+	}
+
+	for _, app := range apps {
+		if err := runSampleAppPush(app); err != nil {
 			ExitGonut(err)
 		}
-		return
 	}
-
-	ExitGonut("invalid url - could not retrieve sample app")
 }
 
-func genericCommandFunc(cmd *cobra.Command, args []string) {
-	sampleApp := lookUpSampleAppByName(cmd.Use)
-	if sampleApp != nil {
-		if err := runSampleAppPush(*sampleApp); err != nil {
-			ExitGonut(err)
-		}
-		return
-	}
-
-	ExitGonut("failed to detect which sample app is to be tested")
-}
-
-func runSampleAppPush(app sampleApp) error {
+func runSampleAppPush(app *sampleApp) error {
 
 	if len(stackSetting) > 0 {
 		hasStack, err := cf.HasStack(stackSetting)
