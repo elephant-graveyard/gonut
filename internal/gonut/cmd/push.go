@@ -22,13 +22,13 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
+	git "gopkg.in/src-d/go-git.v4"
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
@@ -180,51 +180,95 @@ func lookUpSampleAppByName(name string) *sampleApp {
 	return nil
 }
 
-func downloadAppArtifact(absoluteURL string, relativePath string) (files.Directory, error) {
-	u, err := url.Parse(absoluteURL)
+// HomeDir returns the HOME env key
+func HomeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return os.Getenv("USERPROFILE") // windows
+}
+
+func cloneOrPull(location string, url string) error {
+	if _, err := os.Stat(location); os.IsNotExist(err) {
+		if _, err := git.PlainClone(location, false, &git.CloneOptions{URL: url}); err != nil {
+			return err
+		}
+
+	} else {
+		r, err := git.PlainOpen(location)
+		if err != nil {
+			return err
+		}
+
+		w, err := r.Worktree()
+		if err != nil {
+			return err
+		}
+
+		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+		if err != nil && err.Error() != "already up-to-date" {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func downloadAppArtifact(rootURL string, relativePath string) (files.Directory, error) {
+	u, err := url.Parse(rootURL)
 	if err != nil {
 		return nil, err
 	}
 
+	directory := files.NewRootDirectory()
+
 	if u.Scheme == "file" {
-		directory := files.NewRootDirectory()
 		err := files.LoadFromDisk(directory, u.Path)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		return directory, nil
-
 	}
 
-	//download
+	localPath := HomeDir() + "/.gonut/" + u.Host + u.Path
+	err = cloneOrPull(localPath, rootURL)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	err = files.LoadFromDisk(directory, localPath+"/"+relativePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return directory, nil
 }
 
 func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
+	rootURL := absoluteURL
 	relativePath := "/"
 
 	// Regex to split URLs in an optional relative path before
-	// the '@' symbol and the required absoluteURL
+	// the '@' symbol and the required rootURL
 	// https://regex101.com/r/nscFeC/2
 	shellRegexArtifact := regexp.MustCompile(`^((.*)@)?(.+)$`)
 	if matches := shellRegexArtifact.FindStringSubmatch(absoluteURL); len(matches) > 1 {
 		relativePath = matches[2]
-		absoluteURL = matches[3]
+		rootURL = matches[3]
 	} else {
 		return nil
 	}
 
-	if u, err := url.ParseRequestURI(absoluteURL); err == nil {
+	if u, err := url.ParseRequestURI(rootURL); err == nil {
 		a := strings.Split(u.Path, "/")
-		caption := a[len(a)-1]
+		caption := a[len(a)-1] + relativePath
 
 		return &sampleApp{
 			caption:       caption,
-			appNamePrefix: "custom-app-",
+			appNamePrefix: fmt.Sprintf("%s-custom-app-", GonutAppPrefix),
 			assetFunc: func() (files.Directory, error) {
-				return downloadAppArtifact(absoluteURL, relativePath)
+				return downloadAppArtifact(rootURL, relativePath)
 			},
 		}
 	}
