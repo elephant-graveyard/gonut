@@ -367,12 +367,12 @@ func getApp(appName string) (*AppDetails, error) {
 // getAppRoute returns the public URL of the application
 // using its name and the Cloud Foundry host domain.
 func getAppRoute(appName string) (string, error) {
-	domain, err := getDomain(appName)
+	host, domain, err := getHostAndDomain(appName)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("http://%s.%s", appName, domain), nil
+	return fmt.Sprintf("http://%s.%s", host, domain), nil
 }
 
 // getAppStatusCode sends a GET request to the given URL
@@ -476,31 +476,34 @@ func getStacks() ([]StackDetails, error) {
 	return result, nil
 }
 
-// getDomain returns the current Cloud Foundry host
-// domain of the application.
-func getDomain(appName string) (string, error) {
+// getHostAndDomain returns the current Cloud Foundry
+// hostname and domain of the application.
+func getHostAndDomain(appName string) (string, string, error) {
 	app, err := getApp(appName)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// Get route details of the application
 	routesURL := app.Entity.RoutesURL
 	routePage, err := cfCurlRouteURL(routesURL)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
+	routeEntry := routePage.Resources[0] // Resources route always contains only one element
+	host := routeEntry.Entity.Host
+
 	// Get domain details of the application
-	domainGUID := routePage.Resources[0].Entity.DomainGUID // Resources route always contains only one element
+	domainGUID := routeEntry.Entity.DomainGUID
 	domainDetails, err := cfCurlDomainByGUID(domainGUID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// Get domain string from domain details
 	domain := domainDetails.Entity.Name
-	return domain, nil
+	return host, domain, nil
 }
 
 func cf(updates chan string, args ...string) (string, error) {
