@@ -23,10 +23,12 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/gonvenience/bunt"
+	"github.com/gonvenience/neat"
 	"github.com/homeport/gonut/internal/gonut/nok"
 )
 
@@ -47,21 +49,32 @@ include arbitrary sample app data in the application binary.`),
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		ExitGonut(err)
 	}
 }
 
 // ExitGonut leaves gonut in case of an unresolvable error situation
 func ExitGonut(reason interface{}) {
+	var (
+		headline string
+		content  string
+	)
+
 	switch typed := reason.(type) {
 	case *nok.ErrorWithDetails:
-		bunt.Printf("*Error:* _%s_\n", typed.Caption)
-		fmt.Printf("%s\n\n", typed.Details)
+		headline = bunt.Sprintf("*Error:* _%s_", typed.Caption)
+		content = fmt.Sprintf("%s\n\n", typed.Details)
 
 	default:
-		fmt.Println(reason)
+		headline = "Error occurred"
+		content = fmt.Sprint(reason)
 	}
+
+	neat.Box(os.Stderr,
+		headline, strings.NewReader(content),
+		neat.HeadlineColor(bunt.Coral),
+		neat.ContentColor(bunt.DimGray),
+	)
 
 	os.Exit(1)
 }

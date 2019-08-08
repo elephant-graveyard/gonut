@@ -24,11 +24,9 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
-	git "gopkg.in/src-d/go-git.v4"
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
@@ -153,11 +151,13 @@ var sampleApps = []sampleApp{
 
 // pushCmd represents the push command
 var pushCmd = &cobra.Command{
-	Use:     "push [app]",
-	Short:   "Push a sample app to Cloud Foundry",
-	Long:    "Use pre-installed or remote sample apps to be pushed to a Cloud Foundry instance.",
-	Example: getOptions(),
-	Run:     pushCommandFunc,
+	Use:           "push [app]",
+	Short:         "Push a sample app to Cloud Foundry",
+	Long:          "Use pre-installed or remote sample apps to be pushed to a Cloud Foundry instance.",
+	Example:       getOptions(),
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE:          pushCommandFunc,
 }
 
 func init() {
@@ -170,6 +170,14 @@ func init() {
 	pushCmd.PersistentFlags().BoolVarP(&noPingSetting, "no-ping", "p", false, "Do not ping application after push")
 }
 
+func getOptions() string {
+	options := []string{"file:<path>", "http://<git repo hostpath>", "https://<git repo hostpath>", "all"}
+	for _, sampleApp := range sampleApps {
+		options = append(options, sampleApp.command)
+	}
+	return strings.Join(options, "\n")
+}
+
 func lookUpSampleAppByName(name string) *sampleApp {
 	for _, sampleApp := range sampleApps {
 		if sampleApp.command == name {
@@ -180,95 +188,29 @@ func lookUpSampleAppByName(name string) *sampleApp {
 	return nil
 }
 
-// HomeDir returns the HOME env key
-func HomeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // windows
-}
-
-func cloneOrPull(location string, url string) error {
-	if _, err := os.Stat(location); os.IsNotExist(err) {
-		if _, err := git.PlainClone(location, false, &git.CloneOptions{URL: url}); err != nil {
-			return err
-		}
-
-	} else {
-		r, err := git.PlainOpen(location)
-		if err != nil {
-			return err
-		}
-
-		w, err := r.Worktree()
-		if err != nil {
-			return err
-		}
-
-		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-		if err != nil && err.Error() != "already up-to-date" {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func downloadAppArtifact(rootURL string, relativePath string) (files.Directory, error) {
-	u, err := url.Parse(rootURL)
-	if err != nil {
-		return nil, err
-	}
-
-	directory := files.NewRootDirectory()
-
-	if u.Scheme == "file" {
-		err := files.LoadFromDisk(directory, u.Path)
-		if err != nil {
-			return nil, err
-		}
-
-		return directory, nil
-	}
-
-	localPath := HomeDir() + "/.gonut/" + u.Host + u.Path
-	err = cloneOrPull(localPath, rootURL)
-	if err != nil {
-		return nil, err
-	}
-
-	err = files.LoadFromDisk(directory, localPath+"/"+relativePath)
-	if err != nil {
-		return nil, err
-	}
-
-	return directory, nil
-}
-
 func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
+	absoluteURL = strings.Trim(absoluteURL, "/") // Remove leading and tailing '/' to avoid fault paths
 	rootURL := absoluteURL
-	relativePath := "/"
+	var relativePath string
 
-	// Regex to split URLs in an optional relative path before
-	// the '@' symbol and the required rootURL
-	// https://regex101.com/r/nscFeC/2
-	shellRegexArtifact := regexp.MustCompile(`^((.*)@)?(.+)$`)
-	if matches := shellRegexArtifact.FindStringSubmatch(absoluteURL); len(matches) > 1 {
-		relativePath = matches[2]
-		rootURL = matches[3]
-	} else {
-		return nil
+	// Spilt URL into relative path and root URL (<path>#<git repo url>)
+	// Example: assests/dora#github.com/cloudfoundry-samples/cf-sample-app-nodejs
+	urlParts := strings.SplitN(absoluteURL, "#", 2)
+	if len(urlParts) == 2 {
+		relativePath = urlParts[0]
+		rootURL = urlParts[1]
 	}
 
+	// Check URL validity and create sample app structure in case it is valid
 	if u, err := url.ParseRequestURI(rootURL); err == nil {
-		a := strings.Split(u.Path, "/")
-		caption := a[len(a)-1] + relativePath
+		pathSlice := strings.Split(u.Path, "/")
+		caption := pathSlice[len(pathSlice)-1] + "/" + relativePath
 
 		return &sampleApp{
 			caption:       caption,
 			appNamePrefix: fmt.Sprintf("%s-custom-app-", GonutAppPrefix),
 			assetFunc: func() (files.Directory, error) {
-				return downloadAppArtifact(rootURL, relativePath)
+				return cf.DownloadAppArtifact(rootURL, relativePath)
 			},
 		}
 	}
@@ -276,17 +218,9 @@ func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
 	return nil
 }
 
-func getOptions() string {
-	options := []string{"file:<path>", "http://<host>", "https://<host>", "all"}
-	for _, sampleApp := range sampleApps {
-		options = append(options, sampleApp.command)
-	}
-	return strings.Join(options, "\n")
-}
-
-func pushCommandFunc(cmd *cobra.Command, args []string) {
+func pushCommandFunc(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		ExitGonut(fmt.Sprintf("Please provide a sample app name as argument. Valid Arguments:\n%s", getOptions()))
+		return fmt.Errorf("Please provide a sample app name as argument. Valid Arguments:\n\n%s", getOptions())
 	}
 
 	var apps []*sampleApp
@@ -300,15 +234,17 @@ func pushCommandFunc(cmd *cobra.Command, args []string) {
 		} else if app := lookUpSampleAppByURL(arg); app != nil {
 			apps = append(apps, app)
 		} else {
-			ExitGonut(fmt.Sprintf("Could not find %s sample app. Please use an argument from the following list:\n%s", arg, getOptions()))
+			return fmt.Errorf("Could not find %s sample app. Please use an argument from the following list:\n\n%s", arg, getOptions())
 		}
 	}
 
 	for _, app := range apps {
 		if err := runSampleAppPush(app); err != nil {
-			ExitGonut(err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func runSampleAppPush(app *sampleApp) error {
