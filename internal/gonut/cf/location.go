@@ -45,10 +45,10 @@ func cloneOrPull(location string, url string) error {
 	return nil
 }
 
-// DownloadAppArtifact returns a in-memory directory from the provided path.
+// LoadSampleAppURL returns a in-memory directory from the provided path.
 // In case of a public url, it tries to clone/pull the git repository to the
 // .gonut/ directory and creates the in-memory directory from this copy.
-func DownloadAppArtifact(rootURL string, relativePath string) (files.Directory, error) {
+func LoadSampleAppURL(rootURL string, relativePath string, localPath string) (files.Directory, error) {
 	// Split rootURL in its physical parts
 	u, err := url.Parse(rootURL)
 	if err != nil {
@@ -69,8 +69,6 @@ func DownloadAppArtifact(rootURL string, relativePath string) (files.Directory, 
 	}
 
 	// In case of an HTTP URL, try to clone/pull and load local path into directory
-	// Example path: ~/.gonut/github.com/cloudfoundry/cf-acceptance-tests/
-	localPath := HomeDir() + "/.gonut/" + u.Host + u.Path
 	err = cloneOrPull(localPath, rootURL)
 	if err != nil {
 		return nil, err

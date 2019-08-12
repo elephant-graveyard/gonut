@@ -210,7 +210,9 @@ func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
 			caption:       caption,
 			appNamePrefix: fmt.Sprintf("%s-custom-app-", GonutAppPrefix),
 			assetFunc: func() (files.Directory, error) {
-				return cf.DownloadAppArtifact(rootURL, relativePath)
+				// Example local path: ~/.gonut/github.com/cloudfoundry/cf-acceptance-tests/
+				localPath := cf.HomeDir() + "/.gonut/" + u.Host + u.Path
+				return cf.LoadSampleAppURL(rootURL, relativePath, localPath)
 			},
 		}
 	}
