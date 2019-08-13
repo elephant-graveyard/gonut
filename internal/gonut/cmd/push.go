@@ -43,6 +43,7 @@ var GonutAppPrefix = "gonut"
 type sampleApp struct {
 	caption       string
 	buildpack     string
+	stack         string
 	command       string
 	aliases       []string
 	appNamePrefix string
@@ -241,45 +242,39 @@ func pushCommandFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, app := range apps {
-		if err := runSampleAppPush(app); err != nil {
-			return err
+		switch stackSetting {
+		case "all":
+			stacks, err := cf.GetStackNames()
+			if err != nil {
+				return fmt.Errorf("An error occurred while trying to retrieve a list of installed stacks: %v", err)
+			}
+
+			for _, stack := range stacks {
+				app.stack = stack
+				if err := runSampleAppPush(app); err != nil {
+					return err
+				}
+			}
+		default:
+			app.stack = stackSetting // Empty if flag not set
+			if err := runSampleAppPush(app); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	return nil
 }
 
 func runSampleAppPush(app *sampleApp) error {
-
-	if len(stackSetting) > 0 {
-		hasStack, err := cf.HasStack(stackSetting)
-		if err != nil {
-			return err
-		}
-
-		// Skip sample app push if desired stack is unavailable
-		if !hasStack {
-			bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} stack installed.\n",
-				app.caption,
-				app.buildpack,
-			)
-
-			return nil
-		}
-	}
-
 	// Prepare flags for cf push command
 	flags := []string{}
+
+	// Check for stack existence
 	if len(buildpackSetting) > 0 {
 		app.buildpack = buildpackSetting
-		flags = append(flags, "-b", buildpackSetting)
-	}
-	if len(stackSetting) > 0 {
-		flags = append(flags, "-s", stackSetting)
-	}
 
-	// Check for buildpack existence for pre-defined buildpacks
-	if len(app.buildpack) > 0 {
 		hasBuildpack, err := cf.HasBuildpack(app.buildpack)
 		if err != nil {
 			return err
@@ -295,9 +290,29 @@ func runSampleAppPush(app *sampleApp) error {
 				app.caption,
 				app.buildpack,
 			)
-
 			return nil
 		}
+
+		flags = append(flags, "-b", app.buildpack)
+	}
+
+	// Check for buildpack existence for pre-defined buildpacks
+	if len(app.stack) > 0 {
+		hasStack, err := cf.HasStack(app.stack)
+		if err != nil {
+			return err
+		}
+
+		// Skip sample app push if desired stack is unavailable
+		if !hasStack {
+			bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} stack installed.\n",
+				app.caption,
+				app.buildpack,
+			)
+			return nil
+		}
+
+		flags = append(flags, "-s", app.stack)
 	}
 
 	var cleanupSetting cf.AppCleanupSetting

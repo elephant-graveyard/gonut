@@ -227,13 +227,13 @@ func DeleteApps(apps []AppDetails) error {
 // HasStack returns true if Cloud Foundry that stack with the
 // given name exists in the list of installed stacks
 func HasStack(stackName string) (bool, error) {
-	stacks, err := getStacks()
+	stackNames, err := GetStackNames()
 	if err != nil {
 		return false, err
 	}
 
-	for _, stack := range stacks {
-		if stack.Entity.Name == stackName {
+	for _, name := range stackNames {
+		if name == stackName {
 			return true, nil
 		}
 	}
@@ -474,6 +474,22 @@ func getStacks() ([]StackDetails, error) {
 	}
 
 	return result, nil
+}
+
+// GetStackNames uses getStacks() to retrieve all installed stacks
+// and returns a slice with the names.
+func GetStackNames() ([]string, error) {
+	stacks, err := getStacks()
+	if err != nil {
+		return nil, err
+	}
+
+	stackNames := make([]string, len(stacks))
+	for index, stack := range stacks {
+		stackNames[index] = stack.Entity.Name
+	}
+
+	return stackNames, nil
 }
 
 // getHostAndDomain returns the current Cloud Foundry
