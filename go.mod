@@ -3,6 +3,7 @@ module github.com/homeport/gonut
 go 1.12
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gonvenience/bunt v1.1.1
 	github.com/gonvenience/neat v1.0.3
 	github.com/gonvenience/term v1.0.0
@@ -14,5 +15,6 @@ require (
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
 	github.com/spf13/cobra v0.0.5
+	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.2
 )
