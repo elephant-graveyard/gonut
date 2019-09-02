@@ -182,6 +182,11 @@ func lookUpSampleAppByName(name string) *sampleApp {
 		if sampleApp.command == name {
 			return &sampleApp
 		}
+		for _, alias := range sampleApp.aliases {
+			if alias == name {
+				return &sampleApp
+			}
+		}
 	}
 
 	return nil
