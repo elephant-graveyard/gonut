@@ -9,7 +9,7 @@ require (
 	github.com/gonvenience/term v1.0.0
 	github.com/gonvenience/text v1.0.2
 	github.com/gonvenience/wait v1.0.2
-	github.com/homeport/pina-golada v1.4.0
+	github.com/homeport/pina-golada v1.4.1
 	github.com/lucasb-eyer/go-colorful v1.0.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.10.1
