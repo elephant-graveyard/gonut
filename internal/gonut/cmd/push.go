@@ -31,6 +31,7 @@ import (
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
 	"github.com/gonvenience/text"
+	"github.com/gonvenience/wrap"
 	"github.com/homeport/gonut/internal/gonut/assets"
 	"github.com/homeport/gonut/internal/gonut/cf"
 	"github.com/homeport/pina-golada/pkg/files"
@@ -226,19 +227,25 @@ func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
 
 func pushCommandFunc(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("Please provide a sample app name as argument. Valid Arguments:\n\n%s", getOptions())
+		return wrap.Error(
+			bunt.Errorf("*Valid Arguments:*\n%s", getOptions()),
+			"Please provide a sample app name as argument",
+		)
 	}
 
 	var apps []*sampleApp
 	for _, arg := range args {
 		if arg == "all" {
-			for _, app := range sampleApps {
-				apps = append(apps, &app)
+			for i := range sampleApps {
+				apps = append(apps, &sampleApps[i])
 			}
+
 		} else if app := lookUpSampleAppByName(arg); app != nil {
 			apps = append(apps, app)
+
 		} else if app := lookUpSampleAppByURL(arg); app != nil {
 			apps = append(apps, app)
+
 		} else {
 			return fmt.Errorf("Could not find %s sample app. Please use an argument from the following list:\n\n%s", arg, getOptions())
 		}

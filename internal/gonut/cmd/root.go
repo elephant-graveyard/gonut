@@ -29,6 +29,7 @@ import (
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
+	"github.com/gonvenience/wrap"
 	"github.com/homeport/gonut/internal/gonut/nok"
 )
 
@@ -64,6 +65,10 @@ func ExitGonut(reason interface{}) {
 	case *nok.ErrorWithDetails:
 		headline = bunt.Sprintf("*Error:* _%s_", typed.Caption)
 		content = fmt.Sprintf("%s\n\n", typed.Details)
+
+	case wrap.ContextError:
+		headline = bunt.Sprintf("*Error:* _%s_", typed.Context())
+		content = typed.Cause().Error()
 
 	default:
 		headline = "Error occurred"
