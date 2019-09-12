@@ -30,6 +30,8 @@ github.com/gonvenience/wait v1.0.2 h1:DoA3qcw75/iYdxX/BvlKT3bMN1Mv5VPKHsTzA5Y1oL
 github.com/gonvenience/wait v1.0.2/go.mod h1:bTPf2sNDz6WXJ7jhN3jZRPqnpU7MVv175qlMJSx+0kI=
 github.com/gonvenience/wrap v1.0.0 h1:N1zDI7z/uPd5ZQa8jII/ye/VENy3wgLXG962vw3ytMM=
 github.com/gonvenience/wrap v1.0.0/go.mod h1:L47Cm1sK1G8QmFAYQfkHcF/sQ1IBJUa0u4sjqiLqPdM=
+github.com/gonvenience/wrap v1.1.0 h1:d8gEZrXS/zg4BC1q0U4nHpPIh5k6muKpQ1+rQFBwpYc=
+github.com/gonvenience/wrap v1.1.0/go.mod h1:L47Cm1sK1G8QmFAYQfkHcF/sQ1IBJUa0u4sjqiLqPdM=
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/homeport/gonvenience v1.8.0/go.mod h1:G2NH1mGKb2RtQ/xy7Axv5Tnnwzq4yE6NoYyINd1Lvuk=
