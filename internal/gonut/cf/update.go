@@ -34,7 +34,8 @@ import (
 var version string
 var goos string
 
-// NotifyLatestRelease
+// NotifyLatestRelease compares the local version of gonut with the latest release
+// on GitHub and prints a notification in case the local version is outdated.
 func NotifyLatestRelease() error {
 	githubTag := &latest.GithubTag{
 		Owner:      "homeport",
