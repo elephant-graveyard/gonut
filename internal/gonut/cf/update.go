@@ -70,7 +70,7 @@ func releaseNotificationTable(installed string, current string) [][]string {
 	rows := [][]string{
 		[]string{
 			bunt.Sprintf("*Release:*"),
-			bunt.Sprintf("Crimson{%s} → YellowGreen{%s}", current),
+			bunt.Sprintf("Crimson{%s} → YellowGreen{%s}", installed, current),
 		},
 		[]string{
 			bunt.Sprintf("*Changelog:*"),
