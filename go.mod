@@ -12,7 +12,7 @@ require (
 	github.com/homeport/pina-golada v1.4.1
 	github.com/lucasb-eyer/go-colorful v1.0.2
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/onsi/ginkgo v1.10.1
+	github.com/onsi/ginkgo v1.10.2
 	github.com/onsi/gomega v1.7.0
 	github.com/spf13/cobra v0.0.5
 	gopkg.in/src-d/go-git.v4 v4.13.1
