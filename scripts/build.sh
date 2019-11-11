@@ -55,7 +55,7 @@ while read -r OS ARCH; do
   echo -e "Running go build of version \\033[1;3m${TOOL_VERSION}\\033[0m for \\033[1;91m${OS}\\033[0m/\\033[1;31m${ARCH}\\033[0m: \\033[93m$(basename "${TARGET_FILE}")\\033[0m"
   CGO_ENABLED=0 GOOS="${OS}" GOARCH="${ARCH}" go build \
     -tags netgo \
-    -ldflags "-s -w -extldflags '-static' -X github.com/homeport/gonut/internal/gonut/cmd.version=${TOOL_VERSION}" \
+    -ldflags "-s -w -extldflags '-static' -X github.com/homeport/gonut/internal/gonut/cmd.version=${TOOL_VERSION} -X github.com/homeport/gonut/internal/gonut/cf.version=${TOOL_VERSION} -X github.com/homeport/gonut/internal/gonut/cf.goos=${OS}" \
     -o "${TARGET_FILE}" \
     cmd/gonut/main.go
 

@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"image/color"
 
+	"github.com/homeport/gonut/internal/gonut/cf"
+
 	"github.com/gonvenience/bunt"
 	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/cobra"
@@ -38,6 +40,7 @@ var versionCmd = &cobra.Command{
 	Long:  `Shows the version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print(GetVersion())
+		_ = cf.NotifyLatestRelease()
 	},
 }
 
