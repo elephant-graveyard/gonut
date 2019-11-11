@@ -22,6 +22,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -30,6 +31,7 @@ import (
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
 	"github.com/gonvenience/text"
+	"github.com/gonvenience/wrap"
 	"github.com/homeport/gonut/internal/gonut/assets"
 	"github.com/homeport/gonut/internal/gonut/cf"
 	"github.com/homeport/pina-golada/pkg/files"
@@ -42,6 +44,7 @@ var GonutAppPrefix = "gonut"
 type sampleApp struct {
 	caption       string
 	buildpack     string
+	stack         string
 	command       string
 	aliases       []string
 	appNamePrefix string
@@ -115,6 +118,7 @@ var sampleApps = []sampleApp{
 		caption:       "Ruby",
 		command:       "ruby",
 		buildpack:     "ruby_buildpack",
+		aliases:       []string{},
 		appNamePrefix: fmt.Sprintf("%s-ruby-sinatra-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.RubySampleApp,
 	},
@@ -123,6 +127,7 @@ var sampleApps = []sampleApp{
 		caption:       ".NET",
 		command:       "dotnet",
 		buildpack:     "dotnet-core",
+		aliases:       []string{"net"},
 		appNamePrefix: fmt.Sprintf("%s-dotnet-app-", GonutAppPrefix),
 		assetFunc:     assets.Provider.DotNetSampleApp,
 	},
@@ -146,9 +151,13 @@ var sampleApps = []sampleApp{
 
 // pushCmd represents the push command
 var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "Push a sample app to Cloud Foundry",
-	Long:  `Use one of the sub-commands to select a sample app of a list of programming languages to be pushed to a Cloud Foundry instance.`,
+	Use:           "push [app]",
+	Short:         "Push a sample app to Cloud Foundry",
+	Long:          "Use pre-installed or remote sample apps to be pushed to a Cloud Foundry instance.",
+	Example:       getOptions(),
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE:          pushCommandFunc,
 }
 
 func init() {
@@ -159,30 +168,14 @@ func init() {
 	pushCmd.PersistentFlags().StringVarP(&buildpackSetting, "buildpack", "b", "", "Specify buildpack for pushed application")
 	pushCmd.PersistentFlags().StringVarP(&stackSetting, "stack", "s", "", "Specify stack for pushed application")
 	pushCmd.PersistentFlags().BoolVarP(&noPingSetting, "no-ping", "p", false, "Do not ping application after push")
+}
 
+func getOptions() string {
+	options := []string{"file:<path>", "http://<git repo hostpath>", "https://<git repo hostpath>", "all"}
 	for _, sampleApp := range sampleApps {
-		pushCmd.AddCommand(&cobra.Command{
-			Use:     sampleApp.command,
-			Aliases: sampleApp.aliases,
-			Short:   fmt.Sprintf("Push a %s sample app to Cloud Foundry", sampleApp.caption),
-			Long:    fmt.Sprintf(`Push a %s sample app to Cloud Foundry. The application will be deleted after it was pushed successfully.`, sampleApp.caption),
-			Run:     genericCommandFunc,
-		})
+		options = append(options, sampleApp.command)
 	}
-
-	pushCmd.AddCommand(&cobra.Command{
-		Use:   "all",
-		Short: "Pushes all available sample apps to Cloud Foundry",
-		Long:  `Pushes all available sample apps to Cloud Foundry. Each application will be deleted after it was pushed successfully.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			buildpackSetting = ""
-			for _, sampleApp := range sampleApps {
-				if err := runSampleAppPush(sampleApp); err != nil {
-					ExitGonut(err)
-				}
-			}
-		},
-	})
+	return strings.Join(options, "\n")
 }
 
 func lookUpSampleAppByName(name string) *sampleApp {
@@ -190,26 +183,132 @@ func lookUpSampleAppByName(name string) *sampleApp {
 		if sampleApp.command == name {
 			return &sampleApp
 		}
+		for _, alias := range sampleApp.aliases {
+			if alias == name {
+				return &sampleApp
+			}
+		}
 	}
 
 	return nil
 }
 
-func genericCommandFunc(cmd *cobra.Command, args []string) {
-	sampleApp := lookUpSampleAppByName(cmd.Use)
-	if sampleApp == nil {
-		ExitGonut("failed to detect which sample app is to be tested")
+func lookUpSampleAppByURL(absoluteURL string) *sampleApp {
+	absoluteURL = strings.Trim(absoluteURL, "/") // Remove leading and tailing '/' to avoid fault paths
+	rootURL := absoluteURL
+	var relativePath string
+
+	// Spilt URL into relative path and root URL (<path>#<git repo url>)
+	// Example: assests/dora#github.com/cloudfoundry-samples/cf-sample-app-nodejs
+	urlParts := strings.SplitN(absoluteURL, "#", 2)
+	if len(urlParts) == 2 {
+		relativePath = urlParts[0]
+		rootURL = urlParts[1]
 	}
 
-	if err := runSampleAppPush(*sampleApp); err != nil {
-		ExitGonut(err)
+	// Check URL validity and create sample app structure in case it is valid
+	if u, err := url.ParseRequestURI(rootURL); err == nil {
+		pathSlice := strings.Split(u.Path, "/")
+		caption := pathSlice[len(pathSlice)-1] + "/" + relativePath
+
+		return &sampleApp{
+			caption:       caption,
+			appNamePrefix: fmt.Sprintf("%s-custom-app-", GonutAppPrefix),
+			assetFunc: func() (files.Directory, error) {
+				// Example local path: ~/.gonut/github.com/cloudfoundry/cf-acceptance-tests/
+				localPath := cf.HomeDir() + "/.gonut/" + u.Host + u.Path
+				return cf.LoadSampleAppURL(rootURL, relativePath, localPath)
+			},
+		}
 	}
+
+	return nil
 }
 
-func runSampleAppPush(app sampleApp) error {
+func pushCommandFunc(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return wrap.Error(
+			bunt.Errorf("*Valid Arguments:*\n%s", getOptions()),
+			"Please provide a sample app name as argument",
+		)
+	}
 
-	if len(stackSetting) > 0 {
-		hasStack, err := cf.HasStack(stackSetting)
+	var apps []*sampleApp
+	for _, arg := range args {
+		if arg == "all" {
+			for i := range sampleApps {
+				apps = append(apps, &sampleApps[i])
+			}
+
+		} else if app := lookUpSampleAppByName(arg); app != nil {
+			apps = append(apps, app)
+
+		} else if app := lookUpSampleAppByURL(arg); app != nil {
+			apps = append(apps, app)
+
+		} else {
+			return fmt.Errorf("Could not find %s sample app. Please use an argument from the following list:\n\n%s", arg, getOptions())
+		}
+	}
+
+	for _, app := range apps {
+		switch stackSetting {
+		case "all":
+			stacks, err := cf.GetStackNames()
+			if err != nil {
+				return fmt.Errorf("An error occurred while trying to retrieve a list of installed stacks: %v", err)
+			}
+
+			for _, stack := range stacks {
+				app.stack = stack
+				if err := runSampleAppPush(app); err != nil {
+					return err
+				}
+			}
+		default:
+			app.stack = stackSetting // Empty if flag not set
+			if err := runSampleAppPush(app); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func runSampleAppPush(app *sampleApp) error {
+	// Prepare flags for cf push command
+	flags := []string{}
+
+	// Check for stack existence
+	if len(buildpackSetting) > 0 {
+		app.buildpack = buildpackSetting
+
+		hasBuildpack, err := cf.HasBuildpack(app.buildpack)
+		if err != nil {
+			return err
+		}
+		isExternalBuildpack, err := cf.IsExternalBuildpack(app.buildpack)
+		if err != nil {
+			return err
+		}
+
+		// Skip sample app push if desired buildpack is unavailable
+		if !hasBuildpack && !isExternalBuildpack {
+			bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} installed.\n",
+				app.caption,
+				app.buildpack,
+			)
+			return nil
+		}
+
+		flags = append(flags, "-b", app.buildpack)
+	}
+
+	// Check for buildpack existence for pre-defined buildpacks
+	if len(app.stack) > 0 {
+		hasStack, err := cf.HasStack(app.stack)
 		if err != nil {
 			return err
 		}
@@ -220,39 +319,10 @@ func runSampleAppPush(app sampleApp) error {
 				app.caption,
 				app.buildpack,
 			)
-
 			return nil
 		}
-	}
 
-	// Prepare flags for cf push command
-	flags := []string{}
-	if len(buildpackSetting) > 0 {
-		app.buildpack = buildpackSetting
-		flags = append(flags, "-b", buildpackSetting)
-	}
-	if len(stackSetting) > 0 {
-		flags = append(flags, "-s", stackSetting)
-	}
-
-	// Check for buildpack existence
-	hasBuildpack, err := cf.HasBuildpack(app.buildpack)
-	if err != nil {
-		return err
-	}
-	isExternalBuildpack, err := cf.IsExternalBuildpack(app.buildpack)
-	if err != nil {
-		return err
-	}
-
-	// Skip sample app push if desired buildpack is unavailable
-	if !hasBuildpack && !isExternalBuildpack {
-		bunt.Printf("Skipping push of *%s* sample app, because there is no DarkSeaGreen{%s} installed.\n",
-			app.caption,
-			app.buildpack,
-		)
-
-		return nil
+		flags = append(flags, "-s", app.stack)
 	}
 
 	var cleanupSetting cf.AppCleanupSetting
