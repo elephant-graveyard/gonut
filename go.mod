@@ -16,7 +16,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.11.0
-	github.com/onsi/gomega v1.7.1
+	github.com/onsi/gomega v1.8.1
 	github.com/spf13/cobra v0.0.5
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	gopkg.in/src-d/go-git.v4 v4.13.1
