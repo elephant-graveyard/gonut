@@ -3,7 +3,7 @@ module github.com/homeport/gonut
 go 1.12
 
 require (
-	github.com/gonvenience/bunt v1.1.1
+	github.com/gonvenience/bunt v1.1.3
 	github.com/gonvenience/neat v1.3.0
 	github.com/gonvenience/term v1.0.0
 	github.com/gonvenience/text v1.0.5
@@ -15,8 +15,8 @@ require (
 	github.com/homeport/pina-golada v1.4.1
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/onsi/ginkgo v1.14.0
-	github.com/onsi/gomega v1.10.1
+	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/gomega v1.10.3
 	github.com/spf13/cobra v0.0.7
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	gopkg.in/src-d/go-git.v4 v4.13.1
