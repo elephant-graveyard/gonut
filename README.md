@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/homeport/gonut.svg)](https://github.com/homeport/gonut/blob/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/homeport/gonut)](https://goreportcard.com/report/github.com/homeport/gonut)
-[![Build Status](https://travis-ci.org/homeport/gonut.svg?branch=master)](https://travis-ci.org/homeport/gonut)
+[![Build Status](https://travis-ci.com/homeport/gonut.svg?branch=master)](https://travis-ci.com/homeport/gonut)
 [![GoDoc](https://godoc.org/github.com/homeport/gonut?status.svg)](https://godoc.org/github.com/homeport/gonut)
 [![Release](https://img.shields.io/github/release/homeport/gonut.svg)](https://github.com/homeport/gonut/releases/latest)
 
