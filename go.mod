@@ -3,7 +3,7 @@ module github.com/homeport/gonut
 go 1.12
 
 require (
-	github.com/gonvenience/bunt v1.2.0
+	github.com/gonvenience/bunt v1.3.0
 	github.com/gonvenience/neat v1.3.5
 	github.com/gonvenience/term v1.0.0
 	github.com/gonvenience/text v1.0.6
