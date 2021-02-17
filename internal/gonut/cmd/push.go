@@ -247,7 +247,7 @@ func pushCommandFunc(cmd *cobra.Command, args []string) error {
 			apps = append(apps, app)
 
 		} else {
-			return fmt.Errorf("Could not find %s sample app. Please use an argument from the following list:\n\n%s", arg, getOptions())
+			return fmt.Errorf("could not find %s sample app. Please use an argument from the following list:\n\n%s", arg, getOptions())
 		}
 	}
 
@@ -256,7 +256,7 @@ func pushCommandFunc(cmd *cobra.Command, args []string) error {
 		case "all":
 			stacks, err := cf.GetStackNames()
 			if err != nil {
-				return fmt.Errorf("An error occurred while trying to retrieve a list of installed stacks: %v", err)
+				return fmt.Errorf("an error occurred while trying to retrieve a list of installed stacks: %v", err)
 			}
 
 			for _, stack := range stacks {
