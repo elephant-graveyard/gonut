@@ -1,10 +1,10 @@
 ---
 language: go
 go:
-- 1.12.x
+- 1.15.x
 
 install:
-- curl -fsL https://ibm.biz/Bd2645 | bash -s v1.4.1 # pina-golada
+- curl -fsL https://ibm.biz/Bd2645 | bash -s v1.4.3 # pina-golada
 - curl --silent --location https://goo.gl/g1CpPX | bash -s v1.3.0 # golang-dev-tools
 
 script:
@@ -24,5 +24,5 @@ deploy:
   file_glob: true
   file: binaries/*
   on:
-    condition: $TRAVIS_GO_VERSION =~ ^1\.12
+    condition: $TRAVIS_GO_VERSION =~ ^1\.15
     tags: true
