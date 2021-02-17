@@ -1,5 +1,5 @@
 # Build directory
-binaries
+dist
 
 # Generated files
 **/*/pgl*.go

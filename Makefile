@@ -18,37 +18,54 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-.PHONY: all clean prereqs lint vet misspell shellcheck unit-test test build
+.PHONY: all clean generated-code lint vet misspell shellcheck unit-test test build
 
 all: test build
 
 clean:
-	@rm -rf binaries
+	@rm -rf dist
 	@assets/sample-apps-src/java/clean.sh
 	@assets/sample-apps-src/binary/clean.sh
 	@pina-golada cleanup
-	@GO111MODULE=on go clean -i -cache -testcache $(shell go list ./...)
+	@go clean -i -cache -testcache $(shell go list ./...)
 
-prereqs:
-	@assets/sample-apps-src/java/compile.sh
+fmts:
+	@find . -type f -name '*.go' -print0 | xargs -0 gofmt -s -w -e -l
+	@shfmt -s -w -i 2 -ci scripts/*.sh
+
+assets/sample-apps/binary/binary:
+	@echo "Compiling example binary app ..."
 	@assets/sample-apps-src/binary/compile.sh
+	@echo
+
+assets/sample-apps/java/App.jar:
+	@echo "Compiling example Java app ..."
+	@assets/sample-apps-src/java/compile.sh
+	@echo
+
+generated-code: assets/sample-apps/binary/binary assets/sample-apps/java/App.jar
+	@pina-golada generate
 
 lint:
-	@scripts/go-lint.sh
+	@golint --set_exit_status ./...
 
 vet:
-	@scripts/go-vet.sh
+	@go vet ./...
 
 misspell:
-	@scripts/misspell.sh
+	@find . -type f \( -name "*.go" -o -name "*.md" \) -print0 | xargs -0 misspell -error
 
 shellcheck:
-	@scripts/shellcheck.sh
+	@shellcheck scripts/*.sh
 
 unit-test:
-	@scripts/test.sh
+	@ginkgo -r \
+	--randomizeAllSpecs \
+	--randomizeSuites \
+	--failOnPending \
+	--nodes=4 \
+	--compilers=2 \
+	--race \
+	--trace
 
-test: prereqs lint vet misspell shellcheck unit-test
-
-build: prereqs
-	@scripts/build.sh
+test: generated-code lint vet misspell shellcheck unit-test
