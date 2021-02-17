@@ -1,0 +1,61 @@
+---
+before:
+  hooks:
+  - make generated-code
+
+builds:
+  - env:
+    - CGO_ENABLED=0
+    goos:
+    - linux
+    - darwin
+    goarch:
+    - amd64
+    main: ./cmd/gonut/main.go
+    flags:
+    - -tags
+    - netgo
+    - -trimpath
+    ldflags:
+    - -s -w -extldflags "-static" -X github.com/homeport/gonut/internal/cmd.version={{.Version}}
+    mod_timestamp: '{{ .CommitTimestamp }}'
+
+archives:
+- replacements:
+    darwin: darwin
+    linux: linux
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+release:
+  name_template: "{{.ProjectName}} release v{{.Version}}"
+
+changelog:
+  skip: false
+  sort: ""
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+
+brews:
+  - tap:
+      owner: homeport
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    url_template: "https://github.com/homeport/gonut/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    download_strategy: CurlDownloadStrategy
+    commit_author:
+      name: GoReleaser Bot
+      email: goreleaser@carlosbecker.com
+    folder: HomebrewFormula
+    homepage: "https://github.com/homeport/gonut"
+    description: "gonut - a portable tool to help you verify whether you can push a sample app to a Cloud Foundry"
+    license: "MIT"
+    skip_upload: false
+    test: |
+      system "#{bin}/gonut version"
