@@ -1,10 +1,4 @@
-# gonut
-
-[![License](https://img.shields.io/github/license/homeport/gonut.svg)](https://github.com/homeport/gonut/blob/master/LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/homeport/gonut)](https://goreportcard.com/report/github.com/homeport/gonut)
-[![Build Status](https://travis-ci.com/homeport/gonut.svg?branch=master)](https://travis-ci.com/homeport/gonut)
-[![GoDoc](https://godoc.org/github.com/homeport/gonut?status.svg)](https://godoc.org/github.com/homeport/gonut)
-[![Release](https://img.shields.io/github/release/homeport/gonut.svg)](https://github.com/homeport/gonut/releases/latest)
+# gonut [![License](https://img.shields.io/github/license/homeport/gonut.svg)](https://github.com/homeport/gonut/blob/main/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/homeport/gonut)](https://goreportcard.com/report/github.com/homeport/gonut) [![Build and Tests](https://github.com/homeport/gonut/workflows/Build%20and%20Tests/badge.svg)](https://github.com/homeport/gonut/actions?query=workflow%3A%22Build+and+Tests%22) [![Go Reference](https://pkg.go.dev/badge/github.com/homeport/gonut.svg)](https://pkg.go.dev/github.com/homeport/gonut) [![Release](https://img.shields.io/github/release/homeport/gonut.svg)](https://github.com/homeport/gonut/releases/latest) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/homeport/gonut)
 
 ![gonut](.docs/logo.png?raw=true "Gonut logo - molten chocolate covering a donut")
 
@@ -12,11 +6,9 @@
 
 `gonut` is a portable tool to help you verify whether you can push a sample app to a Cloud Foundry. It will push an app to Cloud Foundry and delete it afterwards. The apps are embedded into the `gonut` binary, so you just have to install `gonut` and you are set.
 
-It is written in Golang and uses [`pina-golada`](https://github.com/homeport/pina-golada) to include arbitrary sample app data in the final binary.
+It is written in Go and uses [`pina-golada`](https://github.com/homeport/pina-golada) to include arbitrary sample app data in the final binary.
 
 ![gonut example](assets/images/gonut-example.gif?raw=true "Example of gonut pushing a sample app to Pivotal Cloud Foundry")
-
-_This project is work in progress._
 
 ## How do I get started
 
