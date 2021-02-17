@@ -68,11 +68,11 @@ func NotifyLatestRelease() error {
 
 func releaseNotificationTable(installed string, current string) [][]string {
 	rows := [][]string{
-		[]string{
+		{
 			bunt.Sprintf("*Release:*"),
 			bunt.Sprintf("Crimson{%s} → YellowGreen{%s}", installed, current),
 		},
-		[]string{
+		{
 			bunt.Sprintf("*Changelog:*"),
 			bunt.Sprintf("CornflowerBlue{~https://github.com/homeport/gonut/releases/tag/v%s~}", current),
 		},
