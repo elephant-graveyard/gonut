@@ -38,7 +38,6 @@ import (
 	"github.com/gonvenience/wait"
 	"github.com/homeport/gonut/internal/gonut/nok"
 	"github.com/homeport/pina-golada/pkg/files"
-	"github.com/mitchellh/go-homedir"
 )
 
 // PushApp performs a Cloud Foundry CLI based push operation
@@ -337,7 +336,7 @@ func getOrgAndSpaceNamesFromConfig() (string, string, error) {
 }
 
 func getCloudFoundryConfig() (*CloudFoundryConfig, error) {
-	path, err := homedir.Dir()
+	path, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
