@@ -31,7 +31,11 @@ import (
 var _ = Describe("Gonut Command Package tests", func() {
 	Context("Version sub-command", func() {
 		BeforeEach(func() {
-			ColorSetting = OFF
+			SetColorSettings(OFF, OFF)
+		})
+
+		AfterEach(func() {
+			SetColorSettings(AUTO, AUTO)
 		})
 
 		It("should return the development version by default", func() {
