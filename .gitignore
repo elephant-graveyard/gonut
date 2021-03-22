@@ -1,5 +1,6 @@
 # Build directory
 dist
+**/*.coverprofile
 
 # Generated files
 **/*/pgl*.go
