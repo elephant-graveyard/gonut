@@ -66,7 +66,7 @@ docker run \
   --rm \
   --volume $GOPATH/src/github.com/homeport/gonut:/go/src/github.com/homeport/gonut \
   --workdir /go/src/github.com/homeport/gonut \
-  golang:1.15 /bin/bash
+  golang:1.16 /bin/bash
 ```
 
 ### Git pre-commit hooks
