@@ -10,11 +10,10 @@ builds:
     - linux
     - darwin
     goarch:
+    - arm64
     - amd64
     main: ./cmd/gonut/main.go
     flags:
-    - -tags
-    - netgo
     - -trimpath
     ldflags:
     - -s -w -extldflags "-static" -X github.com/homeport/gonut/internal/cmd.version={{.Version}}
