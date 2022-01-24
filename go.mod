@@ -12,7 +12,7 @@ require (
 	github.com/homeport/pina-golada v1.4.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.17.0
+	github.com/onsi/gomega v1.18.0
 	github.com/spf13/cobra v1.3.0
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	gopkg.in/src-d/go-git.v4 v4.13.1
@@ -39,7 +39,7 @@ require (
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210917163549-3c21e5b27794 // indirect
-	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
