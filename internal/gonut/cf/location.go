@@ -4,8 +4,8 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/homeport/pina-golada/pkg/files"
-	"gopkg.in/src-d/go-git.v4"
 )
 
 // HomeDir returns the HOME env key
