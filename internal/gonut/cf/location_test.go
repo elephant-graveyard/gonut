@@ -20,15 +20,10 @@ func getTempTestingDirectory() string {
 }
 
 var _ = Describe("Sample App Location", func() {
-	var (
-		gonutMainTestingRepoURL string
-		gonutNoRemoteGitRepoURL string
-	)
-
-	BeforeEach(func() {
+	const (
 		gonutMainTestingRepoURL = "https://github.com/git-fixtures/basic/" // Sample project from go-git which is used for their test suites as well
 		gonutNoRemoteGitRepoURL = "https://ibm.com/"
-	})
+	)
 
 	Describe("home directory retrieval", func() {
 		Context("loading from environmental variables", func() {
@@ -111,7 +106,7 @@ var _ = Describe("Sample App Location", func() {
 			})
 
 			It("should throw error", func() {
-				Expect(err.Error()).To(Equal("repository not found"))
+				Expect(err).To(HaveOccurred())
 
 				_, err = os.Stat(path)
 				Expect(err).To(HaveOccurred())
@@ -267,7 +262,7 @@ var _ = Describe("Sample App Location", func() {
 
 			It("should throw an error", func() {
 				dir, err = LoadSampleAppURL(gonutNoRemoteGitRepoURL, "", path)
-				Expect(err.Error()).To(Equal("repository not found"))
+				Expect(err).To(HaveOccurred())
 				Expect(dir).To(BeNil())
 			})
 		})
