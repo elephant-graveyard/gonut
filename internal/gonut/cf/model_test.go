@@ -22,7 +22,7 @@ package cf_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"reflect"
 
 	. "github.com/onsi/ginkgo"
@@ -34,7 +34,7 @@ import (
 var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 	Context("Cloud Foundry API result JSON", func() {
 		It("should parse Cloud Foundry API app details", func() {
-			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/apps/nodejs-app.json")
+			data, err := os.ReadFile("../../../assets/test/cf-curl/v2/apps/nodejs-app.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			var app AppDetails
@@ -43,7 +43,7 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 		})
 
 		It("should parse Cloud Foundry API page of apps details", func() {
-			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/apps/apps-page.json")
+			data, err := os.ReadFile("../../../assets/test/cf-curl/v2/apps/apps-page.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			var appsPage AppsPage
@@ -53,7 +53,7 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 		})
 
 		It("should parse Cloud Foundry API buildpacks details", func() {
-			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/buildpacks/nodejs-buildpack.json")
+			data, err := os.ReadFile("../../../assets/test/cf-curl/v2/buildpacks/nodejs-buildpack.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			var buildpack BuildpackDetails
@@ -62,7 +62,7 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 		})
 
 		It("should parse Cloud Foundry API stacks details", func() {
-			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/stacks/cflinuxfs3.json")
+			data, err := os.ReadFile("../../../assets/test/cf-curl/v2/stacks/cflinuxfs3.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			var stack StackDetails
@@ -72,7 +72,7 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 		})
 
 		It("should parse Cloud Foundry API routes details", func() {
-			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/routes/domain-guid.json")
+			data, err := os.ReadFile("../../../assets/test/cf-curl/v2/routes/domain-guid.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			var route RoutePage
@@ -82,7 +82,7 @@ var _ = Describe("Cloud Foundry JSON structs and contracts", func() {
 		})
 
 		It("should parse Cloud Foundry API domains details", func() {
-			data, err := ioutil.ReadFile("../../../assets/test/cf-curl/v2/domains/bluemix.json")
+			data, err := os.ReadFile("../../../assets/test/cf-curl/v2/domains/bluemix.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			var domain DomainDetails

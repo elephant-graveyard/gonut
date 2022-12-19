@@ -26,7 +26,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -104,7 +103,7 @@ func PushApp(caption string, appName string, directory files.Directory, flags []
 		// If cleanup setting is set to always, make sure to run the delete app
 		// CF CLI call no matter what happens next.
 		if cleanupSetting == Always {
-			defer cf(updates, "delete", appName, "-r", "-f")
+			defer func() { _, _ = cf(updates, "delete", appName, "-r", "-f") }()
 		}
 
 		// Note the timestamp when the push starts
@@ -302,7 +301,7 @@ func deleteApp(updates chan string, app AppDetails) error {
 }
 
 func runWithTempDir(f func(path string) error) error {
-	dir, err := ioutil.TempDir("", "gonut")
+	dir, err := os.MkdirTemp("", "gonut")
 	if err != nil {
 		return err
 	}
@@ -341,7 +340,7 @@ func getCloudFoundryConfig() (*CloudFoundryConfig, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadFile(filepath.Join(path, ".cf", "config.json"))
+	data, err := os.ReadFile(filepath.Join(path, ".cf", "config.json"))
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package cf
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/homeport/pina-golada/pkg/files"
@@ -163,7 +162,7 @@ var _ = Describe("Sample App Location", func() {
 				if setupErr != nil {
 					panic(setupErr)
 				}
-				setupErr = ioutil.WriteFile(path+"/testing.txt", []byte("Hello Gonut!"), 0644)
+				setupErr = os.WriteFile(path+"/testing.txt", []byte("Hello Gonut!"), 0644)
 				if setupErr != nil {
 					panic(setupErr)
 				}
